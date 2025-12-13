@@ -1,0 +1,19 @@
+
+# IT & HR Policies
+
+## 1. Password Policy
+All employees must rotate their passwords every 90 days. Passwords must be at least 12 characters long, containing a mix of uppercase, lowercase, numbers, and special characters. MFA is mandatory for all internal systems.
+
+## 2. Remote Work Policy
+Employees are allowed to work remotely up to 3 days a week with manager approval. Core hours are 10 AM to 3 PM local time.
+
+## 3. Leave Policy
+- Casual Leave: 12 days/year
+- Sick Leave: 10 days/year
+- Privilege Leave: 15 days/year (accrued)
+
+## 4. IT Hardware Request Standard Operating Procedure (SOP)
+1. Raise a request in ServiceNow.
+2. Get approval from Line Manager (automatic if < $1000).
+3. IT team will procure and provision within 5 business days.
+4. Laptop options: MacBook Pro 14" (Devs), Dell XPS 13 (Sales).

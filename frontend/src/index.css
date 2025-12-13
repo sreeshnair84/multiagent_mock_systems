@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+:root {
+    --color-infosys-blue: #007CC3;
+    --color-infosys-bg: #F5F6FA;
+    --color-infosys-text: #333333;
+}
+
+body {
+    background-color: var(--color-infosys-bg);
+    color: var(--color-infosys-text);
+}

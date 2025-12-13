@@ -1,0 +1,91 @@
+# M365 User Management Standard Operating Procedure
+
+**Document Version:** 1.0  
+**Effective Date:** December 2025  
+**Classification:** Internal Use Only
+
+## Purpose
+
+This SOP defines the standard procedures for creating, managing, and deactivating Microsoft 365 user accounts within the organization.
+
+## Scope
+
+Applies to all IT administrators and support staff responsible for M365 user account management.
+
+## Procedures
+
+### 1. User Account Creation
+
+**Prerequisites:**
+- Valid HR approval email
+- User details (name, email, department)
+- Role assignment requirements
+
+**Steps:**
+1. Verify request via email from HR department
+2. Access M365 Admin Center or use automated API
+3. Create user account in Entra ID (formerly Azure AD)
+   - Set username format: firstname.lastname@company.com
+   - Generate temporary password (minimum 12 characters)
+   - Assign appropriate license (E3/E5)
+4. Assign roles based on job function:
+   - **Admin**: Full system access
+   - **Approver**: Workflow and approval permissions
+   - **User**: Standard access
+   - **Pending**: Limited access during onboarding
+5. Generate JWT token for initial session (24-hour expiration)
+6. Send welcome email with credentials
+
+**Timeline:** Complete within 2 business hours of approval
+
+### 2. Role Assignment and Modification
+
+**Admin-Only Operation**
+
+**Steps:**
+1. Validate requester has Admin role
+2. Review role change justification
+3. Update user role in system
+4. Document change in audit log
+5. Notify user of role change
+
+**Security Note:** Role escalations require VP approval
+
+### 3. User Deactivation
+
+**Triggers:**
+- Employee termination
+- Extended leave (>90 days)
+- Security incident
+
+**Steps:**
+1. Receive deactivation request from HR
+2. Set user status to "Inactive"
+3. Revoke all active JWT tokens
+4. Disable mailbox (retain for 30 days)
+5. Remove from all M365 groups
+6. Archive user data per retention policy
+
+**Timeline:** Complete within 1 business hour for terminations
+
+## Exceptions
+
+- **Duplicate Email:** If email already exists, notify HR and request alternate format
+- **License Shortage:** Escalate to IT management for license procurement
+- **Bulk Operations:** For >10 users, use PowerShell script with CSV import
+
+## Keywords
+
+M365 admin, Entra ID, user creation, role assignment, JWT token, account deactivation, license management
+
+## Related Documents
+
+- IT Security Policy v2.1
+- Data Retention Policy
+- Access Control Matrix
+
+---
+
+**Document Owner:** IT Operations  
+**Last Reviewed:** December 2025  
+**Next Review:** June 2026

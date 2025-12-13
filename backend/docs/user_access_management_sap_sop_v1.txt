@@ -1,0 +1,113 @@
+# User Access Management (SAP) Standard Operating Procedure
+
+**Document Version:** 1.0  
+**Effective Date:** December 2025  
+**Classification:** Internal Use Only
+
+## Purpose
+
+This SOP governs the SAP-like access request workflow, including submission, approval, and provisioning of system access.
+
+## Scope
+
+Applies to all users requesting access to enterprise resources and approvers responsible for authorization decisions.
+
+## Access Request Workflow
+
+### 1. Submitting Access Requests
+
+**Requester Actions:**
+1. Navigate to Access Request Portal
+2. Complete request form with:
+   - Resource name (e.g., SAP Module A, SAP Module B)
+   - Action required (Read, Write, Admin)
+   - Business justification
+3. Submit request (generates unique Request ID: REQ-XXXX)
+4. Receive confirmation email
+
+**Auto-Assignment:**
+- Requests automatically routed to appropriate approver based on resource
+- Requester notified of assigned approver
+
+### 2. Approval Process
+
+**Approver Requirements:**
+- Must have "Approver" or "Admin" role
+- Access to approval dashboard
+
+**Approval Steps:**
+1. Review pending requests in queue
+2. Evaluate:
+   - Business justification
+   - User's current role and department
+   - Risk level (Low/Medium/High)
+   - Compliance requirements
+3. Make decision:
+   - **Approve:** Grant access, system auto-provisions
+   - **Reject:** Provide detailed reason, notify requester
+
+**SLA:** 48-hour response time for all requests
+
+### 3. Request Status Tracking
+
+**Status Values:**
+- **Pending:** Awaiting approval
+- **Approved:** Access granted
+- **Rejected:** Access denied
+
+**Tracking Methods:**
+- Self-service portal: Check status by Request ID
+- Email notifications on status changes
+- Query via chatbot: "What is the status of my access request?"
+
+### 4. Escalation Procedures
+
+**Triggers for Escalation:**
+- Request pending >48 hours
+- High-priority business need
+- Approver unavailable
+
+**Escalation Path:**
+1. Notify approver's manager
+2. If no response in 24 hours, escalate to IT Director
+3. Emergency access: Contact IT Operations (requires VP approval)
+
+## Risk Assessment
+
+**Risk Levels:**
+- **Low:** Read-only access to non-sensitive modules
+- **Medium:** Write access to operational modules
+- **High:** Admin access, financial modules, HR data
+
+**High-Risk Requirements:**
+- Dual approval (manager + IT security)
+- Mandatory security training completion
+- Quarterly access review
+
+## Exceptions
+
+- **Urgent Business Need:** VP can approve emergency access (valid 24 hours)
+- **Contractor Access:** Requires sponsor and expiration date
+- **Audit Access:** Pre-approved for compliance team
+
+## Integration with Other Systems
+
+- **M365:** Approved requests trigger Graph API group membership
+- **Outlook:** Approval emails with one-click approve/reject buttons
+- **ServiceNow:** Auto-create ticket for provisioning failures
+
+## Keywords
+
+SAP access request, GRC workflow, approval process, 48-hour SLA, risk assessment, access provisioning
+
+## Related Documents
+
+- Access Control Policy v3.0
+- SAP Security Standards
+- Segregation of Duties Matrix
+
+---
+
+**Document Owner:** IT Security  
+**Last Reviewed:** December 2025  
+**Next Review:** March 2026

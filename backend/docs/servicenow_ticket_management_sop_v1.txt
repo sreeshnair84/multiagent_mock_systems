@@ -1,0 +1,160 @@
+# ServiceNow Ticket Management Standard Operating Procedure
+
+**Document Version:** 1.0  
+**Effective Date:** December 2025  
+**Classification:** Internal Use Only
+
+## Purpose
+
+This SOP defines procedures for creating, managing, updating, and resolving ServiceNow incidents and requests.
+
+## Scope
+
+Applies to all IT support staff, service desk agents, and end users submitting tickets.
+
+## Ticket Lifecycle
+
+### 1. Ticket Creation
+
+**Methods:**
+- Self-service portal
+- Email to support@company.com
+- Phone call to service desk
+- Chatbot interface
+
+**Required Information:**
+- **Title:** Brief description (max 100 characters)
+- **Description:** Detailed issue description
+- **Priority:** Low, Medium, High, Critical
+- **Category:** Hardware, Software, Network, Access
+- **Subcategory:** Specific type (e.g., Laptop, Email, WiFi)
+- **Requester Email:** Auto-populated for authenticated users
+
+**Ticket ID Format:** INC0000001 (auto-generated)
+
+### 2. Priority Assignment
+
+**Priority Levels:**
+- **Critical:** System down, multiple users affected, business impact >$10K/hour
+- **High:** Single user unable to work, security incident
+- **Medium:** Degraded performance, non-critical functionality
+- **Low:** Cosmetic issues, feature requests
+
+**Auto-Escalation:**
+- Critical tickets auto-assign to senior technicians
+- High priority tickets escalate if not acknowledged in 30 minutes
+
+### 3. Ticket Assignment and Routing
+
+**Assignment Rules:**
+- **Hardware:** Desktop support team
+- **Software:** Application support team
+- **Network:** Network operations team
+- **Access:** Identity and access management team
+
+**Load Balancing:** Round-robin assignment within teams
+
+### 4. Work Notes and Updates
+
+**Work Note Requirements:**
+- Document all troubleshooting steps
+- Include timestamps for actions taken
+- Note any customer communication
+- Attach relevant screenshots or logs
+
+**Adding Work Notes:**
+- Use `add_work_note` function
+- Include author email for audit trail
+- Work notes stored as JSON array
+
+**Example:**
+```json
+{
+  "author": "tech@company.com",
+  "note": "Verified network connectivity, issue appears to be DNS-related",
+  "timestamp": "2025-12-13T10:30:00Z"
+}
+```
+
+### 5. Ticket Status Management
+
+**Status Values:**
+- **Open:** Newly created, awaiting assignment
+- **In Progress:** Actively being worked
+- **Resolved:** Solution implemented, awaiting user confirmation
+- **Closed:** User confirmed resolution
+- **Cancelled:** Duplicate or invalid ticket
+
+**Status Transitions:**
+- Open → In Progress (when assigned)
+- In Progress → Resolved (solution applied)
+- Resolved → Closed (user confirms, or auto-close after 3 days)
+- Any → Cancelled (with justification)
+
+### 6. Ticket Resolution and Closing
+
+**Resolution Requirements:**
+- Document root cause
+- List resolution steps
+- Add closing notes
+- Update knowledge base if applicable
+
+**Closing Notes:** Mandatory for Resolved/Closed status
+
+**Auto-Close:** Tickets in Resolved status for >72 hours auto-close
+
+### 7. Tagging and Categorization
+
+**Tag Usage:**
+- Comma-separated keywords
+- Examples: "vpn,remote-access,windows", "email,outlook,sync-issue"
+- Used for reporting and trend analysis
+
+**Updating Tags:** Use `update_ticket_tags` function
+
+### 8. Escalation Procedures
+
+**Escalation Triggers:**
+- SLA breach imminent
+- Technician unable to resolve
+- Customer requests manager involvement
+
+**Escalation Process:**
+1. Use `escalate_ticket` function
+2. Provide escalation reason
+3. Priority auto-increases (Low→Medium→High→Critical)
+4. Escalation note added to description
+5. Notify escalation team
+
+## Service Level Agreements (SLAs)
+
+| Priority | Response Time | Resolution Time |
+|----------|---------------|-----------------|
+| Critical | 15 minutes    | 4 hours         |
+| High     | 1 hour        | 8 hours         |
+| Medium   | 4 hours       | 24 hours        |
+| Low      | 8 hours       | 72 hours        |
+
+**SLA Monitoring:** Automated alerts at 75% and 90% of SLA time
+
+## Integration with Other Systems
+
+- **Outlook:** Email notifications on ticket updates
+- **Intune:** Auto-create tickets for device compliance failures
+- **M365:** Link tickets to user accounts for context
+
+## Keywords
+
+ServiceNow, incident management, ticket creation, work notes, priority escalation, SLA, ticket status, closing notes, tags
+
+## Related Documents
+
+- IT Service Management Policy
+- SLA Agreement
+- Escalation Matrix
+
+---
+
+**Document Owner:** IT Service Desk  
+**Last Reviewed:** December 2025  
+**Next Review:** June 2026

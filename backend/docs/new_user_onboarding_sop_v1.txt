@@ -1,0 +1,178 @@
+# New User Onboarding Standard Operating Procedure
+
+**Document Version:** 1.0  
+**Effective Date:** December 2025  
+**Classification:** Internal Use Only
+
+## Purpose
+
+This SOP defines the holistic onboarding workflow for new employees, integrating M365 account creation, device provisioning, access requests, and training.
+
+## Scope
+
+Applies to HR, IT Operations, and managers involved in new hire onboarding.
+
+## Onboarding Workflow
+
+### Phase 1: Pre-Arrival (HR Initiates)
+
+**Timeline:** 5 business days before start date
+
+**HR Actions:**
+1. Submit onboarding request via portal
+2. Provide employee details:
+   - Full name
+   - Email (format: firstname.lastname@company.com)
+   - Department and manager
+   - Job title and role
+   - Start date
+   - Device requirements (laptop, mobile, etc.)
+
+**IT Receives:**
+- Onboarding ticket (auto-created)
+- Workflow ID: ONBOARD-{user_id}
+
+### Phase 2: Account and Device Provisioning (IT Operations)
+
+**Timeline:** 3 business days before start date
+
+**Automated Workflow (`onboard_user` function):**
+
+**Step 1: Create M365 Account**
+- Email: As specified by HR
+- Username: Full name
+- Password: Temporary (12+ characters, sent via secure channel)
+- Role: Initially "Pending"
+- Status: "Pending" (upgraded to "Active" after completion)
+
+**Step 2: Assign Default Role**
+- Role set to "User" (standard access)
+- Special roles (Admin, Approver) require manager approval
+
+**Step 3: Provision Device (if serial number provided)**
+- Device profile: "Standard" (default)
+- OS: Windows 11 (laptops) or iOS/Android (mobile)
+- Configuration: Office 365, VPN, antivirus
+- Enrollment status: "Enrolled"
+
+**Step 4: Activate Account**
+- Status changed from "Pending" to "Active"
+- JWT token generated (24-hour expiration)
+- Welcome email sent with credentials
+
+**Workflow Completion:**
+- Onboarding marked complete
+- Workflow ID returned for tracking
+
+### Phase 3: Day 1 - Orientation and Training
+
+**Timeline:** Employee's first day
+
+**IT Onboarding Session (30 minutes):**
+1. Account login and password change
+2. Device setup and Company Portal app
+3. Email and calendar configuration
+4. VPN and remote access setup
+5. Security awareness overview
+
+**Chatbot Training:**
+- Introduce AI assistant for IT support
+- Demo common queries:
+  - "How do I reset my password?"
+  - "Request access to SAP Module A"
+  - "Create a ticket for laptop issue"
+
+### Phase 4: Access Provisioning (Days 1-5)
+
+**Manager Responsibilities:**
+1. Review employee's role and access needs
+2. Submit access requests for:
+   - SAP modules
+   - Shared drives
+   - Department-specific applications
+3. Approve requests via email or portal
+
+**IT Responsibilities:**
+- Process access requests per SLA (48 hours)
+- Verify compliance with access policies
+- Document all granted permissions
+
+### Phase 5: Post-Onboarding (Week 2)
+
+**IT Follow-Up:**
+- Verify device compliance
+- Confirm all access requests processed
+- Check for any outstanding tickets
+
+**HR Follow-Up:**
+- Employee satisfaction survey
+- Confirm onboarding completion
+- Close onboarding workflow
+
+## Onboarding Checklist
+
+**HR:**
+- [ ] Submit onboarding request
+- [ ] Provide employee details
+- [ ] Specify device requirements
+- [ ] Notify manager of start date
+
+**IT:**
+- [ ] Create M365 account
+- [ ] Assign default role
+- [ ] Provision device
+- [ ] Activate account
+- [ ] Send welcome email
+- [ ] Schedule Day 1 orientation
+
+**Manager:**
+- [ ] Submit access requests
+- [ ] Approve necessary permissions
+- [ ] Introduce team and resources
+
+**Employee:**
+- [ ] Attend IT orientation
+- [ ] Change temporary password
+- [ ] Complete security training
+- [ ] Test device and applications
+
+## Special Cases
+
+**Remote Employees:**
+- Device shipped to home address
+- Virtual IT orientation via Teams
+- VPN setup prioritized
+
+**Contractors:**
+- Limited access (expires on contract end date)
+- No device provisioning (BYOD with MDM enrollment)
+- Sponsor required for access requests
+
+**Executive Onboarding:**
+- Executive device profile
+- Expedited access provisioning (24-hour SLA)
+- Dedicated IT support contact
+
+## Integration with Other Systems
+
+- **M365:** Account creation via Graph API
+- **Intune:** Device enrollment and profile assignment
+- **Access Management:** Auto-submit default access requests
+- **ServiceNow:** Track onboarding progress via ticket
+- **RAG System:** Provide onboarding FAQs via chatbot
+
+## Keywords
+
+New user onboarding, holistic workflow, M365 provisioning, Intune enrollment, access requests, Day 1 orientation, chatbot training
+
+## Related Documents
+
+- Employee Onboarding Policy
+- IT Security Awareness Training
+- Access Control Matrix
+
+---
+
+**Document Owner:** HR & IT Operations  
+**Last Reviewed:** December 2025  
+**Next Review:** June 2026

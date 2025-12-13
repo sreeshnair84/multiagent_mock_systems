@@ -1,0 +1,145 @@
+# Intune Device Provisioning Standard Operating Procedure
+
+**Document Version:** 1.0  
+**Effective Date:** December 2025  
+**Classification:** Internal Use Only
+
+## Purpose
+
+This SOP defines procedures for enrolling, managing, and decommissioning devices using Microsoft Intune Mobile Device Management (MDM).
+
+## Scope
+
+Applies to IT operations staff responsible for device provisioning and end users receiving corporate devices.
+
+## Device Provisioning Workflow
+
+### 1. Device Enrollment
+
+**Prerequisites:**
+- Device serial number
+- User email (M365 account)
+- Device profile selection (Standard, Mobile, Executive)
+
+**Enrollment Steps:**
+1. Receive device from procurement
+2. Power on and connect to network
+3. Use `provision_device` function with:
+   - Serial number
+   - User email
+   - Profile name
+   - OS version
+4. System assigns Device ID (format: D001, D002, etc.)
+5. Intune pushes configuration profile
+6. Device status set to "Enrolled"
+
+**Profile Types:**
+- **Standard:** Windows 11, Office 365, VPN, antivirus
+- **Mobile:** iOS/Android, email sync, conditional access
+- **Executive:** Enhanced security, mobile threat defense
+
+**Timeline:** Provisioning completes in 15-30 minutes
+
+### 2. Device Profile Management
+
+**Viewing Profiles:**
+- Use `get_device_profile` to retrieve configuration
+- Includes: OS version, last sync time, compliance status
+
+**Profile Updates:**
+- Changes pushed automatically via Intune
+- Devices sync every 8 hours (or on-demand)
+
+### 3. Device Status Tracking
+
+**Status Values:**
+- **Enrolled:** Active and compliant
+- **Pending:** Enrollment in progress
+- **Failed:** Enrollment error (requires troubleshooting)
+- **Wiped:** Data remotely erased
+
+**Status Updates:**
+- Use `update_device_status` function
+- Triggers compliance re-evaluation
+
+### 4. Device Compliance Monitoring
+
+**Compliance Checks:**
+- OS version up-to-date
+- Antivirus enabled and current
+- Encryption enabled
+- Screen lock configured (6-digit PIN minimum)
+
+**Non-Compliance Actions:**
+- Email notification to user
+- Block access to corporate email after 24 hours
+- Auto-create ServiceNow ticket for IT follow-up
+
+### 5. Device Listing and Filtering
+
+**Query Options:**
+- By user email: `list_devices(user_email="user@company.com")`
+- By status: `list_devices(status="Enrolled")`
+- Combined filters supported
+
+**Use Cases:**
+- Audit user's devices
+- Find non-compliant devices
+- Inventory reporting
+
+### 6. Device Wipe (Admin-Only)
+
+**Authorization:** Requires Admin role
+
+**Wipe Scenarios:**
+- Device lost or stolen
+- Employee termination
+- Security breach
+
+**Wipe Procedure:**
+1. Verify admin credentials
+2. Use `wipe_device` function with:
+   - Device ID
+   - Admin email
+   - Confirmation=True (safety check)
+3. Intune sends remote wipe command
+4. Device erases all data on next sync
+5. Status updated to "Wiped"
+6. Audit log entry created
+
+**Important:** Wipe is irreversible. Verify device ID before execution.
+
+**Personal Devices:** Selective wipe removes only corporate data
+
+## Device Sync and Troubleshooting
+
+**Sync Frequency:**
+- Automatic: Every 8 hours
+- Manual: User can force sync via Company Portal app
+
+**Common Issues:**
+- **Enrollment Failed:** Check network connectivity, verify user account active
+- **Compliance Failed:** Review specific policy violation, guide user to remediate
+- **Sync Delayed:** Verify device online, check Intune service status
+
+## Integration with Other Systems
+
+- **M365:** Device enrollment triggers license assignment
+- **ServiceNow:** Auto-create tickets for compliance failures
+- **Access Management:** Device compliance required for SAP access
+
+## Keywords
+
+Intune enrollment, device provisioning, MDM, compliance monitoring, device profile, remote wipe, IT-only operations
+
+## Related Documents
+
+- Mobile Device Management Policy
+- BYOD Policy
+- Data Protection Standards
+
+---
+
+**Document Owner:** IT Operations  
+**Last Reviewed:** December 2025  
+**Next Review:** June 2026
