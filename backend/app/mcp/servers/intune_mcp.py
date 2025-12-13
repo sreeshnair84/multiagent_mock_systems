@@ -2,6 +2,10 @@
 Intune MCP Server
 Built with official FastMCP SDK
 """
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
+
 from fastmcp import FastMCP
 from app.tools.intune_tools import (
     provision_device,

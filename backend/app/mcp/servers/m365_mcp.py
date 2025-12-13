@@ -2,6 +2,10 @@
 M365 User Management MCP Server
 Built with official FastMCP SDK
 """
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
+
 from fastmcp import FastMCP
 from app.tools.user_management_tools import (
     get_user_roles,

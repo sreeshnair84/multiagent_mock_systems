@@ -2,6 +2,11 @@
 ServiceNow MCP Server
 Built with official FastMCP SDK
 """
+import sys
+import os
+# Add parent directory to path so we can import app modules
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
+
 from fastmcp import FastMCP
 from app.tools.servicenow_tools import (
     create_ticket,

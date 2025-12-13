@@ -49,6 +49,10 @@ app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(onboarding.router)
 
+# Import and include data router
+from app.api import data
+app.include_router(data.router, tags=["Data"])
+
 @app.get("/")
 async def root():
     return {"message": "Antigravity Backend is running"}

@@ -20,3 +20,4 @@ pypdf
 sentence-transformers
 faiss-cpu
 langchain-mcp-adapters
+fastmcp
