@@ -1,32 +1,40 @@
 """
 Workflow Agent with Long-Term Memory
-Handles workflow checkpoints and resumption ONLY via Workflow MCP server (port 8007)
+Handles workflow checkpoints and resumption via MCP server
 Includes memory tools for user preferences and conversation context
 """
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from app.agents.state import AgentState
 from app.core.llm import get_llm
-from app.mcp.mcp_client import get_tools_for_server
+from app.mcp.mcp_client_langgraph import get_mcp_tools
 from app.tools.memory_tools import MEMORY_TOOLS
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def workflow_agent(state: AgentState):
     """
     Workflow Agent: Handles workflow checkpoint management and resumption.
-    Only calls Workflow MCP server (port 8007).
+    Uses MCP tools via LangGraph client.
     Has access to long-term memory tools.
     """
-    model = get_llm()
-    
-    # Get tools from Workflow MCP server + memory tools
-    workflow_tools = await get_tools_for_server("workflow")
-    all_tools = workflow_tools + MEMORY_TOOLS
-    model = model.bind_tools(all_tools)
+    try:
+        model = get_llm()
+        
+        # Get Workflow tools from MCP server + memory tools
+        workflow_tools = await get_mcp_tools(prefix="workflow_")
+        all_tools = workflow_tools + MEMORY_TOOLS
+        
+        if not workflow_tools:
+            logger.warning("No Workflow tools found from MCP server")
+        
+        model = model.bind_tools(all_tools)
 
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", """You are the Workflow Agent. You ONLY handle workflow checkpoint management and resumption for long-running processes.
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", """You are the Workflow Agent. You ONLY handle workflow checkpoint management and resumption for long-running processes.
 
-Your ONLY available Workflow tools are from the Workflow MCP server (port 8007):
+Your available Workflow tools from the MCP server:
 - replay_workflow: Replay workflow from a specific checkpoint
 - terminate_workflow: Force terminate a workflow
 - resume_interrupted: Resume an interrupted workflow
@@ -46,12 +54,15 @@ Use memory tools to:
 
 You do NOT have access to user management, devices, tickets, or emails.
 You help manage the execution state of complex multi-step workflows."""),
-        MessagesPlaceholder(variable_name="messages"),
-    ])
+            MessagesPlaceholder(variable_name="messages"),
+        ])
 
-    chain = prompt | model
-    response = await chain.ainvoke(state)
-    
-    return {
-        "messages": [response]
-    }
+        chain = prompt | model
+        response = await chain.ainvoke(state)
+        
+        return {
+            "messages": [response]
+        }
+    except Exception as e:
+        logger.error(f"Error in workflow_agent: {e}")
+        raise

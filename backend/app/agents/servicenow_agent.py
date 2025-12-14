@@ -1,32 +1,40 @@
 """
 ServiceNow Agent with Long-Term Memory
-Handles IT tickets and incidents ONLY via ServiceNow MCP server (port 8001)
+Handles IT tickets and incidents via MCP server
 Includes memory tools for user preferences and conversation context
 """
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from app.agents.state import AgentState
 from app.core.llm import get_llm
-from app.mcp.mcp_client import get_tools_for_server
+from app.mcp.mcp_client_langgraph import get_mcp_tools
 from app.tools.memory_tools import MEMORY_TOOLS
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def servicenow_agent(state: AgentState):
     """
     ServiceNow Agent: Handles IT tickets and incidents.
-    Only calls ServiceNow MCP server (port 8001).
+    Uses MCP tools via LangGraph client.
     Has access to long-term memory tools.
     """
-    model = get_llm()
-    
-    # Get tools from ServiceNow MCP server + memory tools
-    servicenow_tools = await get_tools_for_server("servicenow")
-    all_tools = servicenow_tools + MEMORY_TOOLS
-    model = model.bind_tools(all_tools)
+    try:
+        model = get_llm()
+        
+        # Get ServiceNow tools from MCP server + memory tools
+        servicenow_tools = await get_mcp_tools(prefix="servicenow_")
+        all_tools = servicenow_tools + MEMORY_TOOLS
+        
+        if not servicenow_tools:
+            logger.warning("No ServiceNow tools found from MCP server")
+        
+        model = model.bind_tools(all_tools)
 
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", """You are the ServiceNow Agent. You ONLY handle IT incidents and service requests through the ServiceNow system.
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", """You are the ServiceNow Agent. You ONLY handle IT incidents and service requests through the ServiceNow system.
 
-Your ONLY available ServiceNow tools are from the ServiceNow MCP server (port 8001):
+Your available ServiceNow tools from the MCP server:
 - create_ticket: Create new IT tickets
 - get_ticket: Get ticket details by ID
 - search_tickets: Search tickets with filters
@@ -50,12 +58,15 @@ Use memory tools to:
 
 You do NOT have access to user management, device management, or email tools.
 If the user asks for something outside ServiceNow tickets, politely redirect them to the appropriate agent."""),
-        MessagesPlaceholder(variable_name="messages"),
-    ])
+            MessagesPlaceholder(variable_name="messages"),
+        ])
 
-    chain = prompt | model
-    response = await chain.ainvoke(state)
-    
-    return {
-        "messages": [response]
-    }
+        chain = prompt | model
+        response = await chain.ainvoke(state)
+        
+        return {
+            "messages": [response]
+        }
+    except Exception as e:
+        logger.error(f"Error in servicenow_agent: {e}")
+        raise

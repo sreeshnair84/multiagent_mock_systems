@@ -1,32 +1,40 @@
 """
 Outlook Agent with Long-Term Memory
-Handles email operations ONLY via Outlook MCP server (port 8006)
+Handles email operations via MCP server
 Includes memory tools for user preferences and conversation context
 """
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from app.agents.state import AgentState
 from app.core.llm import get_llm
-from app.mcp.mcp_client import get_tools_for_server
+from app.mcp.mcp_client_langgraph import get_mcp_tools
 from app.tools.memory_tools import MEMORY_TOOLS
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def outlook_agent(state: AgentState):
     """
     Outlook Agent: Handles email operations through Exchange Online.
-    Only calls Outlook MCP server (port 8006).
+    Uses MCP tools via LangGraph client.
     Has access to long-term memory tools.
     """
-    model = get_llm()
-    
-    # Get tools from Outlook MCP server + memory tools
-    outlook_tools = await get_tools_for_server("outlook")
-    all_tools = outlook_tools + MEMORY_TOOLS
-    model = model.bind_tools(all_tools)
+    try:
+        model = get_llm()
+        
+        # Get Outlook tools from MCP server + memory tools
+        outlook_tools = await get_mcp_tools(prefix="outlook_")
+        all_tools = outlook_tools + MEMORY_TOOLS
+        
+        if not outlook_tools:
+            logger.warning("No Outlook tools found from MCP server")
+        
+        model = model.bind_tools(all_tools)
 
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", """You are the Outlook Agent. You ONLY handle email operations through Microsoft Exchange Online.
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", """You are the Outlook Agent. You ONLY handle email operations through Microsoft Exchange Online.
 
-Your ONLY available Outlook tools are from the Outlook MCP server (port 8006):
+Your available Outlook tools from the MCP server:
 - send_email: Send emails to recipients
 - get_emails: Fetch emails with optional filters (recipient, status)
 - mark_read: Mark emails as read
@@ -48,12 +56,15 @@ Use memory tools to:
 You do NOT have access to user management, devices, or tickets.
 If the user asks for user management, redirect them to the M365 agent.
 If the user asks for tickets, redirect them to the ServiceNow agent."""),
-        MessagesPlaceholder(variable_name="messages"),
-    ])
+            MessagesPlaceholder(variable_name="messages"),
+        ])
 
-    chain = prompt | model
-    response = await chain.ainvoke(state)
-    
-    return {
-        "messages": [response]
-    }
+        chain = prompt | model
+        response = await chain.ainvoke(state)
+        
+        return {
+            "messages": [response]
+        }
+    except Exception as e:
+        logger.error(f"Error in outlook_agent: {e}")
+        raise

@@ -1,32 +1,40 @@
 """
 Intune Agent with Long-Term Memory
-Handles device management ONLY via Intune MCP server (port 8002)
+Handles device management via MCP server
 Includes memory tools for user preferences and conversation context
 """
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from app.agents.state import AgentState
 from app.core.llm import get_llm
-from app.mcp.mcp_client import get_tools_for_server
+from app.mcp.mcp_client_langgraph import get_mcp_tools
 from app.tools.memory_tools import MEMORY_TOOLS
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def intune_agent(state: AgentState):
     """
     Intune Agent: Handles device management and compliance.
-    Only calls Intune MCP server (port 8002).
+    Uses MCP tools via LangGraph client.
     Has access to long-term memory tools.
     """
-    model = get_llm()
-    
-    # Get tools from Intune MCP server + memory tools
-    intune_tools = await get_tools_for_server("intune")
-    all_tools = intune_tools + MEMORY_TOOLS
-    model = model.bind_tools(all_tools)
+    try:
+        model = get_llm()
+        
+        # Get Intune tools from MCP server + memory tools
+        intune_tools = await get_mcp_tools(prefix="intune_")
+        all_tools = intune_tools + MEMORY_TOOLS
+        
+        if not intune_tools:
+            logger.warning("No Intune tools found from MCP server")
+        
+        model = model.bind_tools(all_tools)
 
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", """You are the Intune Agent. You ONLY handle device management, enrollment, and compliance through Microsoft Intune.
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", """You are the Intune Agent. You ONLY handle device management, enrollment, and compliance through Microsoft Intune.
 
-Your ONLY available Intune tools are from the Intune MCP server (port 8002):
+Your available Intune tools from the MCP server:
 - provision_device: Enroll new devices with profile assignment
 - get_device_profile: Get device configuration and status
 - list_devices: List devices with optional filters
@@ -48,12 +56,15 @@ Use memory tools to:
 
 You do NOT have access to user management, tickets, or email tools.
 If the user asks for something outside device management, politely redirect them to the appropriate agent."""),
-        MessagesPlaceholder(variable_name="messages"),
-    ])
+            MessagesPlaceholder(variable_name="messages"),
+        ])
 
-    chain = prompt | model
-    response = await chain.ainvoke(state)
-    
-    return {
-        "messages": [response]
-    }
+        chain = prompt | model
+        response = await chain.ainvoke(state)
+        
+        return {
+            "messages": [response]
+        }
+    except Exception as e:
+        logger.error(f"Error in intune_agent: {e}")
+        raise

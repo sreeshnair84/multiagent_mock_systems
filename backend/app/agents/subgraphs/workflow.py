@@ -1,17 +1,24 @@
+"""
+Workflow Agent Subgraph
+Uses the updated async workflow_agent with MCP tools
+"""
 from langgraph.graph import StateGraph, START, END
 from app.agents.state import AgentState
 from app.agents.workflow_agent import workflow_agent
 
-def create_workflow_subgraph():
-    workflow = StateGraph(AgentState)
-    
-    # Add Workflow agent node
-    workflow.add_node("workflow_agent", workflow_agent)
-    
-    # Simple flow: START -> agent -> END
-    workflow.add_edge(START, "workflow_agent")
-    workflow.add_edge("workflow_agent", END)
-    
-    return workflow.compile()
+def should_continue(state: AgentState):
+    """Check if the agent wants to use tools"""
+    last_message = state["messages"][-1]
+    if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+        return "continue"
+    return END
 
-workflow_graph = create_workflow_subgraph()
+# Build simple graph - agent handles tools internally via LangGraph
+builder = StateGraph(AgentState)
+builder.add_node("agent", workflow_agent)
+
+builder.add_edge(START, "agent")
+# The agent will handle tool calls internally, so we just loop back or end
+builder.add_conditional_edges("agent", should_continue, {"continue": "agent", END: END})
+
+workflow_graph = builder.compile()

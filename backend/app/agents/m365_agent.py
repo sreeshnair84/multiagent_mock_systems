@@ -1,32 +1,40 @@
 """
 M365 User Management Agent with Long-Term Memory
-Handles user management ONLY via M365 MCP server (port 8004)
+Handles user management via MCP server
 Includes memory tools for user preferences and conversation context
 """
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from app.agents.state import AgentState
 from app.core.llm import get_llm
-from app.mcp.mcp_client import get_tools_for_server
+from app.mcp.mcp_client_langgraph import get_mcp_tools
 from app.tools.memory_tools import MEMORY_TOOLS
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def m365_agent(state: AgentState):
     """
     M365 Agent: Handles user identity management (Entra ID).
-    Only calls M365 User Management MCP server (port 8004).
+    Uses MCP tools via LangGraph client.
     Has access to long-term memory tools.
     """
-    model = get_llm()
-    
-    # Get tools from M365 User Management MCP server + memory tools
-    m365_tools = await get_tools_for_server("m365")
-    all_tools = m365_tools + MEMORY_TOOLS
-    model = model.bind_tools(all_tools)
+    try:
+        model = get_llm()
+        
+        # Get M365 tools from MCP server + memory tools
+        m365_tools = await get_mcp_tools(prefix="m365_")
+        all_tools = m365_tools + MEMORY_TOOLS
+        
+        if not m365_tools:
+            logger.warning("No M365 tools found from MCP server")
+        
+        model = model.bind_tools(all_tools)
 
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", """You are the M365 User Management Agent. You ONLY handle user identities and roles through Microsoft Entra ID (formerly Azure AD).
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", """You are the M365 User Management Agent. You ONLY handle user identities and roles through Microsoft Entra ID (formerly Azure AD).
 
-Your ONLY available M365 tools are from the M365 User Management MCP server (port 8004):
+Your available M365 tools from the MCP server:
 - get_user_roles: Fetch user roles by email
 - create_user: Create new user accounts
 - list_users: List users with optional filters (status, role)
@@ -49,12 +57,15 @@ Use memory tools to:
 You do NOT have access to email (Outlook), devices, or tickets.
 If the user asks for email operations, redirect them to the Outlook agent.
 If the user asks for device management, redirect them to the Intune agent."""),
-        MessagesPlaceholder(variable_name="messages"),
-    ])
+            MessagesPlaceholder(variable_name="messages"),
+        ])
 
-    chain = prompt | model
-    response = await chain.ainvoke(state)
-    
-    return {
-        "messages": [response]
-    }
+        chain = prompt | model
+        response = await chain.ainvoke(state)
+        
+        return {
+            "messages": [response]
+        }
+    except Exception as e:
+        logger.error(f"Error in m365_agent: {e}")
+        raise

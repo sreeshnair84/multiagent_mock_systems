@@ -1,36 +1,24 @@
+"""
+Access Agent Subgraph
+Uses the updated async access_agent with MCP tools
+"""
 from langgraph.graph import StateGraph, START, END
-from langgraph.prebuilt import ToolNode
 from app.agents.state import AgentState
-from app.tools import get_sap_requests
-from app.core.llm import get_llm
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-
-def access_agent_node(state: AgentState):
-    model = get_llm()
-    tools = [get_sap_requests]
-    model = model.bind_tools(tools)
-    
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are the Access Agent. You handle permission requests and SAP GRC."),
-        MessagesPlaceholder(variable_name="messages"),
-    ])
-    
-    chain = prompt | model
-    response = chain.invoke(state)
-    return {"messages": [response]}
+from app.agents.access_agent import access_agent
 
 def should_continue(state: AgentState):
+    """Check if the agent wants to use tools"""
     last_message = state["messages"][-1]
-    if last_message.tool_calls:
-        return "tools"
+    if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+        return "continue"
     return END
 
+# Build simple graph - agent handles tools internally via LangGraph
 builder = StateGraph(AgentState)
-builder.add_node("agent", access_agent_node)
-builder.add_node("tools", ToolNode([get_sap_requests]))
+builder.add_node("agent", access_agent)
 
 builder.add_edge(START, "agent")
-builder.add_conditional_edges("agent", should_continue, ["tools", END])
-builder.add_edge("tools", "agent")
+# The agent will handle tool calls internally, so we just loop back or end
+builder.add_conditional_edges("agent", should_continue, {"continue": "agent", END: END})
 
 access_graph = builder.compile()
