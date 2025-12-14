@@ -10,6 +10,10 @@ class User(SQLModel, table=True):
     password_hash: str = ""  # Hashed password for authentication
     role: str = "user"  # admin, supervisor, user, approver
     status: str = "Active"  # Active, Inactive, Pending
+    job_title: Optional[str] = None  # User's job title
+    department: Optional[str] = None  # Department name
+    manager_email: Optional[str] = None  # Manager's email for org hierarchy
+    license_sku: str = "E3"  # License type (E3, E5, F3, etc.)
     persona: str = "default"
     token_expires: Optional[datetime] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)

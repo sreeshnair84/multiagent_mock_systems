@@ -17,9 +17,12 @@ async def create_ticket(
     title: str, 
     description: str, 
     priority: str = "Medium",
+    urgency: str = "Medium",
     category: Optional[str] = None,
+    assignment_group: Optional[str] = None,
     requester_email: Optional[str] = None,
-    tags: Optional[str] = None
+    tags: Optional[str] = None,
+    sla_hours: Optional[int] = None
 ) -> Dict[str, Any]:
     """Creates a new ServiceNow ticket with validation.
     
@@ -27,9 +30,12 @@ async def create_ticket(
         title: Ticket title
         description: Detailed description
         priority: Low, Medium, High, or Critical (default: Medium)
+        urgency: Low, Medium, High, or Critical (default: Medium)
         category: Category (Hardware, Software, Network, etc.)
+        assignment_group: Team to assign ticket to (e.g., "IT Support L1")
         requester_email: Email of person requesting ticket
         tags: Comma-separated tags
+        sla_hours: SLA deadline in hours from now
     
     Returns:
         Dict with ticket details including ticket_id
@@ -41,14 +47,23 @@ async def create_ticket(
         ticket_num = len(existing_tickets) + 1
         ticket_id = f"INC{ticket_num:07d}"
         
+        # Calculate SLA due date if provided
+        sla_due_date = None
+        if sla_hours:
+            from datetime import timedelta
+            sla_due_date = datetime.utcnow() + timedelta(hours=sla_hours)
+        
         ticket = Ticket(
             ticket_id=ticket_id,
             title=title,
             description=description,
             priority=priority,
+            urgency=urgency,
             category=category,
+            assignment_group=assignment_group,
             requester_email=requester_email,
             tags=tags,
+            sla_due_date=sla_due_date,
             status="Open"
         )
         session.add(ticket)
@@ -60,7 +75,10 @@ async def create_ticket(
             "title": ticket.title,
             "status": ticket.status,
             "priority": ticket.priority,
+            "urgency": ticket.urgency,
             "category": ticket.category,
+            "assignment_group": ticket.assignment_group,
+            "sla_due_date": ticket.sla_due_date.isoformat() if ticket.sla_due_date else None,
             "created_date": ticket.created_date.isoformat()
         }
 
@@ -87,14 +105,17 @@ async def get_ticket(ticket_id: str) -> Optional[Dict[str, Any]]:
             "description": ticket.description,
             "status": ticket.status,
             "priority": ticket.priority,
+            "urgency": ticket.urgency,
             "impact": ticket.impact,
             "category": ticket.category,
             "subcategory": ticket.subcategory,
+            "assignment_group": ticket.assignment_group,
             "assignee_email": ticket.assignee_email,
             "requester_email": ticket.requester_email,
             "work_notes": json.loads(ticket.work_notes),
             "tags": ticket.tags,
             "closing_notes": ticket.closing_notes,
+            "sla_due_date": ticket.sla_due_date.isoformat() if ticket.sla_due_date else None,
             "created_date": ticket.created_date.isoformat(),
             "updated_date": ticket.updated_date.isoformat()
         }
@@ -221,7 +242,8 @@ async def search_tickets(
     user_email: Optional[str] = None, 
     priority: Optional[str] = None, 
     status: Optional[str] = None,
-    category: Optional[str] = None
+    category: Optional[str] = None,
+    assignment_group: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     """Queries tickets with optional filters.
     
@@ -230,6 +252,7 @@ async def search_tickets(
         priority: Filter by priority (Low, Medium, High, Critical)
         status: Filter by status (Open, In Progress, Resolved, Closed, Cancelled)
         category: Filter by category
+        assignment_group: Filter by assignment group
     
     Returns:
         List of ticket dictionaries
@@ -245,6 +268,8 @@ async def search_tickets(
             query = query.where(Ticket.status == status)
         if category:
             query = query.where(Ticket.category == category)
+        if assignment_group:
+            query = query.where(Ticket.assignment_group == assignment_group)
         
         result = await session.execute(query)
         tickets = result.scalars().all()
@@ -296,4 +321,34 @@ async def escalate_ticket(ticket_id: str, reason: str) -> Dict[str, Any]:
             "new_priority": ticket.priority,
             "reason": reason,
             "escalated_at": ticket.updated_date.isoformat()
+        }
+
+
+async def assign_to_group(ticket_id: str, group_name: str) -> Dict[str, Any]:
+    """Assigns ticket to a team/group.
+    
+    Args:
+        ticket_id: Ticket identifier
+        group_name: Name of the assignment group (e.g., "IT Support L1", "Network Team")
+    
+    Returns:
+        Dict with assignment confirmation
+    """
+    async with AsyncSession(engine) as session:
+        result = await session.execute(select(Ticket).where(Ticket.ticket_id == ticket_id))
+        ticket = result.scalars().first()
+        
+        if not ticket:
+            return {"error": f"Ticket {ticket_id} not found"}
+        
+        ticket.assignment_group = group_name
+        ticket.updated_date = datetime.utcnow()
+        
+        await session.commit()
+        await session.refresh(ticket)
+        
+        return {
+            "ticket_id": ticket.ticket_id,
+            "assignment_group": ticket.assignment_group,
+            "updated_date": ticket.updated_date.isoformat()
         }

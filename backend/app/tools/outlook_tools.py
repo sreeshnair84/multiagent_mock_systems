@@ -52,6 +52,61 @@ async def send_email(sender: str, recipient: str, subject: str, body: str) -> Di
         }
 
 
+
+async def reply_to_email(email_id: str, body: str, reply_all: bool = False) -> Dict[str, Any]:
+    """Replies to an existing email.
+    
+    Args:
+        email_id: ID of the email to reply to
+        body: Reply content
+        reply_all: Whether to reply to all recipients
+    
+    Returns:
+        Dict with sent reply details
+    """
+    async with AsyncSession(engine) as session:
+        result = await session.exec(select(Email).where(Email.email_id == email_id))
+        original_email = result.first()
+        
+        if not original_email:
+            return {"error": f"Email {email_id} not found"}
+            
+        # Determine recipients
+        sender = original_email.recipient # We are the sender now (the original recipient)
+        recipient = original_email.sender
+        cc = original_email.cc_recipients if reply_all else None
+        
+        # Create reply email
+        result = await session.exec(select(Email))
+        emails = result.all()
+        email_num = len(emails) + 1
+        new_email_id = f"E{email_num:03d}"
+        
+        reply_email = Email(
+            email_id=new_email_id,
+            sender=sender,
+            recipient=recipient,
+            cc_recipients=cc,
+            subject=f"Re: {original_email.subject}",
+            body_snippet=body[:200],
+            status="Unread",
+            importance=original_email.importance,
+            date_received=datetime.utcnow()
+        )
+        
+        session.add(reply_email)
+        await session.commit()
+        await session.refresh(reply_email)
+        
+        return {
+            "email_id": reply_email.email_id,
+            "reply_to": original_email.email_id,
+            "recipient": reply_email.recipient,
+            "subject": reply_email.subject,
+            "sent_at": reply_email.date_received.isoformat()
+        }
+
+
 async def get_emails(recipient: Optional[str] = None, status: Optional[str] = None) -> List[Dict[str, Any]]:
     """Fetches inbox with optional filters.
     

@@ -10,7 +10,11 @@ class AccessRequest(SQLModel, table=True):
     resource: str  # e.g., SAP Module A
     action: str  # Read, Write, Admin
     status: str = "Pending"  # Pending, Approved, Rejected
+    risk_level: str = "Low"  # Low, Medium, High, Critical - automated risk assessment
+    business_justification: Optional[str] = None  # Required justification for access
     approver_email: Optional[str] = None
     submitted_date: datetime = Field(default_factory=datetime.utcnow)
     reviewed_date: Optional[datetime] = None
+    validity_start_date: Optional[datetime] = None  # Access start date
+    validity_end_date: Optional[datetime] = None  # Access expiration date
     reason: Optional[str] = None  # Rejection reason or notes

@@ -14,7 +14,9 @@ def supervisor_agent(state: AgentState):
     """
     model = get_llm()
     
-    system_prompt = (
+    workflow = state.get("workflow")
+    
+    base_prompt = (
         "You are the Supervisor of an Enterprise Interface. "
         "Your goal is to route the user's request to the correct specialist worker. "
         "Workers: \n"
@@ -23,6 +25,22 @@ def supervisor_agent(state: AgentState):
         "- M365: User management, licenses, password resets, email (Outlook).\n"
         "- Access: SAP GRC, permission requests, role assignment.\n"
         "- Knowledge: Questions about HR policies, IT SOPs, Procedures, How-To guides.\n"
+    )
+
+    if workflow == "INTUNE_COPILOT":
+        base_prompt += (
+            "\nCurrent Mode: INTUNE COPILOT. "
+            "Prioritize 'Intune' for device queries. "
+            "Use 'ServiceNow' for ticketing if compliance fails. "
+        )
+    elif workflow == "ACCESS_WORKFLOW":
+        base_prompt += (
+            "\nCurrent Mode: APPLICATION ACCESS. "
+            "Prioritize 'Access' for permission requests. "
+            "Use 'M365' for license assignment if needed. "
+        )
+
+    system_prompt = base_prompt + (
         "\n"
         "If the user is just saying hello or the task is done, route to FINISH. "
     )

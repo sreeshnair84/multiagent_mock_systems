@@ -12,11 +12,26 @@ from app.tools.user_management_tools import (
     create_user,
     generate_token,
     list_users,
-    deactivate_user
+    deactivate_user,
+    assign_license
 )
 
 # Initialize FastMCP server
 mcp = FastMCP("M365_UserManagement")
+
+@mcp.tool()
+async def assign_m365_license(
+    user_email: str,
+    license_sku: str
+) -> dict:
+    """Assigns an M365 license to a user.
+    
+    Args:
+        user_email: User email address
+        license_sku: License SKU (e.g., E3, E5, F3)
+    """
+    return await assign_license(user_email, license_sku)
+
 
 @mcp.tool()
 async def get_m365_user_roles(user_email: str) -> dict:

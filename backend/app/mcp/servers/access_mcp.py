@@ -12,11 +12,27 @@ from app.tools.access_management_tools import (
     approve_request,
     get_workflow_status,
     notify_approver,
-    onboard_user
+    onboard_user,
+    calculate_risk
 )
 
 # Initialize FastMCP server
 mcp = FastMCP("AccessManagement")
+
+@mcp.tool()
+async def calculate_access_risk(
+    resource: str,
+    action: str
+) -> dict:
+    """Calculates risk level for an access request.
+    
+    Args:
+        resource: Resource to access
+        action: Action requested
+    """
+    return await calculate_risk(resource, action)
+    
+
 
 @mcp.tool()
 async def submit_access_management_request(

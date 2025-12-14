@@ -10,8 +10,10 @@ class Ticket(SQLModel, table=True):
     description: str
     status: str = "Open"  # Open, In Progress, Closed, Resolved, Cancelled
     priority: str = "Medium"  # Low, Medium, High, Critical
+    urgency: str = "Medium"  # Low, Medium, High, Critical - separate from priority
     impact: str = "Medium"  # Low, Medium, High
     category: Optional[str] = None  # e.g., Hardware, Software, Network
+    assignment_group: Optional[str] = None  # Team assignment (e.g., "IT Support L1", "Network Team")
     subcategory: Optional[str] = None  # e.g., Laptop, Email, WiFi
     assignee_email: Optional[str] = None
     requester_email: Optional[str] = None
@@ -22,3 +24,4 @@ class Ticket(SQLModel, table=True):
     updated_date: datetime = Field(default_factory=datetime.utcnow)
     resolved_date: Optional[datetime] = None
     closed_date: Optional[datetime] = None
+    sla_due_date: Optional[datetime] = None  # SLA deadline for resolution

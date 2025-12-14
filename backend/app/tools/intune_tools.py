@@ -12,6 +12,50 @@ from app.models import Device
 from app.core.database import engine
 
 
+
+async def check_compliance(device_id: str) -> Dict[str, Any]:
+    """Checks device compliance against policies.
+    
+    Args:
+        device_id: Device identifier
+    
+    Returns:
+        Dict with compliance status and issues
+    """
+    async with AsyncSession(engine) as session:
+        result = await session.exec(select(Device).where(Device.device_id == device_id))
+        device = result.first()
+        
+        if not device:
+            return {"error": f"Device {device_id} not found"}
+        
+        # Mock compliance logic
+        issues = []
+        status = "Compliant"
+        
+        if "Outdated" in device.os_version:
+            status = "NonCompliant"
+            issues.append("OS version outdated")
+            
+        if device.device_type == "Personal" and "Standard" not in device.profile_name:
+             status = "InGracePeriod"
+             issues.append("Personal device pending policy application")
+
+        # Update device status
+        device.compliance_state = status
+        device.last_sync = datetime.utcnow()
+        session.add(device)
+        await session.commit()
+        await session.refresh(device)
+
+        return {
+            "device_id": device.device_id,
+            "compliance_state": status,
+            "issues": issues,
+            "last_check": device.last_sync.isoformat()
+        }
+
+
 async def provision_device(serial_number: str, user_email: str, profile_name: str = "Standard", os_version: str = "Unknown") -> Dict[str, Any]:
     """Enrolls a device with profile assignment.
     

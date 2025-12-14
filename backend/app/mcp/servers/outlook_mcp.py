@@ -11,11 +11,28 @@ from app.tools.outlook_tools import (
     send_email,
     get_emails,
     mark_read,
-    extract_approval
+    extract_approval,
+    reply_to_email
 )
 
 # Initialize FastMCP server
 mcp = FastMCP("Outlook")
+
+@mcp.tool()
+async def reply_to_outlook_email(
+    email_id: str,
+    body: str,
+    reply_all: bool = False
+) -> dict:
+    """Replies to an existing email.
+    
+    Args:
+        email_id: ID of the email to reply to
+        body: Reply content
+        reply_all: Whether to reply to all recipients
+    """
+    return await reply_to_email(email_id, body, reply_all)
+
 
 @mcp.tool()
 async def send_outlook_email(

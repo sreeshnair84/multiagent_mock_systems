@@ -12,11 +12,22 @@ from app.tools.intune_tools import (
     get_device_profile,
     update_device_status,
     list_devices,
-    wipe_device
+    wipe_device,
+    check_compliance
 )
 
 # Initialize FastMCP server
 mcp = FastMCP("Intune")
+
+@mcp.tool()
+async def check_device_compliance(device_id: str) -> dict:
+    """Checks device compliance against policies.
+    
+    Args:
+        device_id: Device identifier
+    """
+    return await check_compliance(device_id)
+
 
 @mcp.tool()
 async def provision_intune_device(

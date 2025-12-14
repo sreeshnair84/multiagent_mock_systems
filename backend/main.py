@@ -74,14 +74,25 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
     
     try:
         while True:
-            data = await websocket.receive_text()
+            raw_data = await websocket.receive_text()
             
-            # 1. Send user message to graph
-            input_message = HumanMessage(content=data)
+            try:
+                payload = json.loads(raw_data)
+                content = payload.get("message", "")
+                workflow = payload.get("workflow", None)
+            except json.JSONDecodeError:
+                content = raw_data
+                workflow = None
+
+            # 1. Send user message to graph with workflow context
+            input_message = HumanMessage(content=content)
+            inputs = {"messages": [input_message]}
+            if workflow:
+                inputs["workflow"] = workflow
             
             # 2. Stream events from graph
             async for event in graph_runnable.astream_events(
-                {"messages": [input_message]}, 
+                inputs, 
                 config, 
                 version="v1"
             ):

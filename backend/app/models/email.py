@@ -8,8 +8,11 @@ class Email(SQLModel, table=True):
     email_id: str = Field(unique=True, index=True)  # e.g., E001
     sender: str
     recipient: str = Field(index=True)
+    cc_recipients: Optional[str] = None  # Comma-separated CC emails
+    bcc_recipients: Optional[str] = None  # Comma-separated BCC emails
     subject: str
     body_snippet: str  # First 200 chars of body
+    importance: str = "Normal"  # Low, Normal, High
     status: str = "Unread"  # Read, Unread, Pending
     date_received: datetime = Field(default_factory=datetime.utcnow)
     has_attachment: bool = False

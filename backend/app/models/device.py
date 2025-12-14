@@ -9,7 +9,11 @@ class Device(SQLModel, table=True):
     serial_number: str = Field(unique=True, index=True)
     user_email: str = Field(index=True)
     profile_name: str  # Standard, Mobile, etc.
-    status: str = "Pending"  # Enrolled, Pending, Failed
+    status: str = "Pending"  # Enrolled, Pending, Failed, Wiped
+    compliance_state: str = "Unknown"  # Compliant, NonCompliant, InGracePeriod, Unknown
+    device_type: str = "Company"  # Company, Personal, Unknown
+    manufacturer: Optional[str] = None  # Device manufacturer (Apple, Dell, HP, etc.)
+    model: Optional[str] = None  # Device model
     provision_date: Optional[datetime] = None
     os_version: str
     last_sync: Optional[datetime] = None

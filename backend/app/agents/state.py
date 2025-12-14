@@ -11,3 +11,5 @@ class AgentState(TypedDict):
     next: str
     # Optional: store structured outputs or tool calls
     outputs: dict
+    # Workflow context (e.g., 'INTUNE_COPILOT', 'ACCESS_WORKFLOW')
+    workflow: str

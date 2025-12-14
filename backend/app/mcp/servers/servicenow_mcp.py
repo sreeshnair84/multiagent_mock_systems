@@ -15,7 +15,8 @@ from app.tools.servicenow_tools import (
     add_work_note,
     update_ticket_tags,
     search_tickets,
-    escalate_ticket
+    escalate_ticket,
+    assign_to_group
 )
 
 # Initialize FastMCP server
@@ -132,6 +133,20 @@ async def escalate_servicenow_ticket(
         reason: Reason for escalation
     """
     return await escalate_ticket(ticket_id, reason)
+
+
+@mcp.tool()
+async def assign_servicenow_ticket_to_group(
+    ticket_id: str,
+    group_name: str
+) -> dict:
+    """Assigns ticket to a team/assignment group.
+    
+    Args:
+        ticket_id: Ticket identifier
+        group_name: Assignment group name (e.g., "IT Support L1", "Network Team")
+    """
+    return await assign_to_group(ticket_id, group_name)
 
 
 if __name__ == "__main__":
