@@ -32,11 +32,6 @@ async def lifespan(app: FastAPI):
         
         app.state.graph = create_supervisor_graph(checkpointer=checkpointer)
         
-        # 3. Mount MCP servers for path-based routing
-        # NOTE: Temporarily disabled due to FastMCP http_app() initialization issues
-        # from app.mcp.mcp_router import mount_mcp_servers
-        # mount_mcp_servers(app)
-        
         yield
         # cleanup happens on exit
 
@@ -62,10 +57,6 @@ app.include_router(data.router, tags=["Data"])
 # Include MCP router for listing servers
 from app.mcp.mcp_router import router as mcp_router
 app.include_router(mcp_router)
-
-# Note: MCP server mounting is disabled due to FastMCP http_app() limitations
-# See: https://github.com/jlowin/fastmcp/issues/1494
-# To enable when FastMCP adds router support, uncomment in lifespan function
 
 @app.get("/")
 async def root():

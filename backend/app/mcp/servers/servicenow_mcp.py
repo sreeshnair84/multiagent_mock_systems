@@ -135,5 +135,5 @@ async def escalate_servicenow_ticket(
 
 
 if __name__ == "__main__":
-    # Run with streamable-http transport for MCP protocol
-    mcp.run(transport="streamable-http", port=8001)
+    from app.mcp.config import run_server
+    run_server(mcp, "ServiceNow")

@@ -99,4 +99,5 @@ async def onboard_new_user(
 
 
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http", port=8005)
+    from app.mcp.config import run_server
+    run_server(mcp, "AccessManagement")

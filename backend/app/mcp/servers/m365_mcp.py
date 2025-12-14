@@ -81,4 +81,5 @@ async def deactivate_m365_user(user_email: str) -> dict:
 
 
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http", port=8004)
+    from app.mcp.config import run_server
+    run_server(mcp, "M365_UserManagement")

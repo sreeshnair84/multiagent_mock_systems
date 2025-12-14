@@ -88,4 +88,5 @@ async def wipe_intune_device(
 
 
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http", port=8002)
+    from app.mcp.config import run_server
+    run_server(mcp, "Intune")

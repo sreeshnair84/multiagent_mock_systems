@@ -2,47 +2,70 @@
 REM Test MCP Servers with Inspector
 REM Run from backend directory
 
-echo Testing MCP Servers with Inspector
-echo ===================================
+echo ========================================
+echo   MCP Inspector Testing
+echo ========================================
 echo.
 echo Choose a server to test:
-echo 1. ServiceNow (port 8001)
-echo 2. Intune (port 8002)
-echo 3. M365 User Management (port 8004)
-echo 4. Access Management (port 8005)
-echo 5. Outlook (port 8006)
-echo 6. Workflow (port 8007)
+echo.
+echo 1. Composite Server (RECOMMENDED - All Tools)
+echo 2. Individual Server - ServiceNow
+echo 3. Individual Server - Intune
+echo 4. Individual Server - M365
+echo 5. Individual Server - Access Management
+echo 6. Individual Server - Outlook
+echo 7. Individual Server - Workflow
 echo.
 
-set /p choice="Enter choice (1-6): "
+set /p choice="Enter choice (1-7): "
 
 if "%choice%"=="1" (
-    echo Starting ServiceNow MCP Inspector...
+    echo.
+    echo Starting Composite MCP Server with Inspector...
+    echo This includes all tools from all servers.
+    echo.
+    cd ..
+    npx @modelcontextprotocol/inspector python backend/app/mcp/composite_server.py
+)
+if "%choice%"=="2" (
+    echo.
+    echo Starting ServiceNow MCP Server with Inspector...
+    echo.
     cd ..
     npx @modelcontextprotocol/inspector python backend/app/mcp/servers/servicenow_mcp.py
 )
-if "%choice%"=="2" (
-    echo Starting Intune MCP Inspector...
+if "%choice%"=="3" (
+    echo.
+    echo Starting Intune MCP Server with Inspector...
+    echo.
     cd ..
     npx @modelcontextprotocol/inspector python backend/app/mcp/servers/intune_mcp.py
 )
-if "%choice%"=="3" (
-    echo Starting M365 MCP Inspector...
+if "%choice%"=="4" (
+    echo.
+    echo Starting M365 MCP Server with Inspector...
+    echo.
     cd ..
     npx @modelcontextprotocol/inspector python backend/app/mcp/servers/m365_mcp.py
 )
-if "%choice%"=="4" (
-    echo Starting Access Management MCP Inspector...
+if "%choice%"=="5" (
+    echo.
+    echo Starting Access Management MCP Server with Inspector...
+    echo.
     cd ..
     npx @modelcontextprotocol/inspector python backend/app/mcp/servers/access_mcp.py
 )
-if "%choice%"=="5" (
-    echo Starting Outlook MCP Inspector...
+if "%choice%"=="6" (
+    echo.
+    echo Starting Outlook MCP Server with Inspector...
+    echo.
     cd ..
     npx @modelcontextprotocol/inspector python backend/app/mcp/servers/outlook_mcp.py
 )
-if "%choice%"=="6" (
-    echo Starting Workflow MCP Inspector...
+if "%choice%"=="7" (
+    echo.
+    echo Starting Workflow MCP Server with Inspector...
+    echo.
     cd ..
     npx @modelcontextprotocol/inspector python backend/app/mcp/servers/workflow_mcp.py
 )
