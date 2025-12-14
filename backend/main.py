@@ -53,6 +53,11 @@ app.include_router(onboarding.router)
 from app.api import data
 app.include_router(data.router, tags=["Data"])
 
+# Mount MCP servers with path-based routing (e.g., /mcp/servicenow, /mcp/intune)
+# This reduces resource usage by running all MCP servers in a single process
+from app.mcp.mcp_router import mcp_app
+app.mount("/mcp", mcp_app)
+
 @app.get("/")
 async def root():
     return {"message": "Antigravity Backend is running"}
