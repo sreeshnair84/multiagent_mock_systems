@@ -2,23 +2,24 @@
 Memory Tools
 Tools for reading and writing long-term memory across conversations
 """
-from langchain.tools import tool, ToolRuntime
-from typing import Dict, Any, List, Optional
+from langchain.tools import tool
+from typing import Dict, Any, List
 from dataclasses import dataclass
 
 
-@dataclass
-class MemoryContext:
-    """Context passed to memory tools"""
-    user_id: str
-    conversation_id: str
+# Simple in-memory storage for demo purposes
+# In production, this should use a proper database
+_memory_store: Dict[str, Dict[str, Any]] = {
+    "user_preferences": {},
+    "conversation_context": {}
+}
 
 
 @tool
 def save_user_preference(
     preference_key: str,
     preference_value: str,
-    runtime: ToolRuntime[MemoryContext]
+    user_id: str = "default_user"
 ) -> str:
     """Save a user preference to long-term memory.
     
@@ -32,55 +33,40 @@ def save_user_preference(
     Args:
         preference_key: Key for the preference (e.g., "communication_style", "timezone")
         preference_value: Value to save
-        runtime: Tool runtime with store and context
+        user_id: User identifier (optional)
     
     Returns:
         Confirmation message
     """
-    store = runtime.store
-    user_id = runtime.context.user_id
+    if user_id not in _memory_store["user_preferences"]:
+        _memory_store["user_preferences"][user_id] = {}
     
-    # Store in user preferences namespace
-    namespace = ("user_preferences", user_id)
-    
-    # Get existing preferences or create new
-    existing = store.get(namespace, "preferences")
-    preferences = existing.value if existing else {}
-    
-    # Update preference
-    preferences[preference_key] = preference_value
-    
-    # Save back to store
-    store.put(namespace, "preferences", preferences)
+    _memory_store["user_preferences"][user_id][preference_key] = preference_value
     
     return f"Saved preference: {preference_key} = {preference_value}"
 
 
 @tool
 def get_user_preferences(
-    runtime: ToolRuntime[MemoryContext]
+    user_id: str = "default_user"
 ) -> Dict[str, Any]:
     """Retrieve all user preferences from long-term memory.
+    
+    Args:
+        user_id: User identifier (optional)
     
     Returns:
         Dictionary of user preferences
     """
-    store = runtime.store
-    user_id = runtime.context.user_id
-    
-    namespace = ("user_preferences", user_id)
-    preferences = store.get(namespace, "preferences")
-    
-    if preferences:
-        return preferences.value
-    return {}
+    return _memory_store["user_preferences"].get(user_id, {})
 
 
 @tool
 def save_conversation_context(
     context_key: str,
     context_value: str,
-    runtime: ToolRuntime[MemoryContext]
+    conversation_id: str = "default_conversation",
+    user_id: str = "default_user"
 ) -> str:
     """Save important context from the current conversation.
     
@@ -93,87 +79,74 @@ def save_conversation_context(
     Args:
         context_key: Key for the context (e.g., "current_project", "active_ticket")
         context_value: Value to save
-        runtime: Tool runtime with store and context
+        conversation_id: Conversation identifier (optional)
+        user_id: User identifier (optional)
     
     Returns:
         Confirmation message
     """
-    store = runtime.store
-    user_id = runtime.context.user_id
-    conversation_id = runtime.context.conversation_id
+    key = f"{user_id}:{conversation_id}"
     
-    namespace = ("conversation_context", user_id, conversation_id)
+    if key not in _memory_store["conversation_context"]:
+        _memory_store["conversation_context"][key] = {}
     
-    # Get existing context or create new
-    existing = store.get(namespace, "context")
-    context = existing.value if existing else {}
-    
-    # Update context
-    context[context_key] = context_value
-    
-    # Save back to store
-    store.put(namespace, "context", context)
+    _memory_store["conversation_context"][key][context_key] = context_value
     
     return f"Saved context: {context_key} = {context_value}"
 
 
 @tool
 def get_conversation_context(
-    runtime: ToolRuntime[MemoryContext]
+    conversation_id: str = "default_conversation",
+    user_id: str = "default_user"
 ) -> Dict[str, Any]:
     """Retrieve context from the current conversation.
+    
+    Args:
+        conversation_id: Conversation identifier (optional)
+        user_id: User identifier (optional)
     
     Returns:
         Dictionary of conversation context
     """
-    store = runtime.store
-    user_id = runtime.context.user_id
-    conversation_id = runtime.context.conversation_id
-    
-    namespace = ("conversation_context", user_id, conversation_id)
-    context = store.get(namespace, "context")
-    
-    if context:
-        return context.value
-    return {}
+    key = f"{user_id}:{conversation_id}"
+    return _memory_store["conversation_context"].get(key, {})
 
 
 @tool
 def search_conversation_history(
     query: str,
-    runtime: ToolRuntime[MemoryContext],
+    user_id: str = "default_user",
     limit: int = 5
 ) -> List[Dict[str, Any]]:
-    """Search through past conversation contexts using semantic search.
+    """Search through past conversation contexts.
     
     Args:
         query: Search query (e.g., "tickets about network issues")
-        runtime: Tool runtime with store and context
+        user_id: User identifier (optional)
         limit: Maximum number of results to return
     
     Returns:
         List of matching conversation contexts
     """
-    store = runtime.store
-    user_id = runtime.context.user_id
+    results = []
     
-    # Search across all conversation contexts for this user
-    namespace = ("conversation_context", user_id)
+    # Simple keyword search through conversation contexts
+    for key, context in _memory_store["conversation_context"].items():
+        if key.startswith(f"{user_id}:"):
+            # Check if query matches any context values
+            context_str = str(context).lower()
+            if query.lower() in context_str:
+                conversation_id = key.split(":", 1)[1]
+                results.append({
+                    "conversation_id": conversation_id,
+                    "context": context
+                })
+                
+                if len(results) >= limit:
+                    break
     
-    results = store.search(
-        namespace,
-        query=query,
-        limit=limit
-    )
-    
-    return [
-        {
-            "conversation_id": item.key,
-            "context": item.value,
-            "score": item.score if hasattr(item, 'score') else None
-        }
-        for item in results
-    ]
+    return results
 
 
 # List of all memory tools
