@@ -24,7 +24,7 @@ async def access_agent(state: AgentState):
         model = model.bind_tools(tools)
 
         prompt = ChatPromptTemplate.from_messages([
-            ("system", "You are the Access Control Agent. You handle SAP GRC requests and permission approvals."),
+            ("system", "You are the Access Control Agent. You handle SAP GRC requests, permission approvals, and RBAC role assignments (Azure)."),
             MessagesPlaceholder(variable_name="messages"),
         ])
 

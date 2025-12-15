@@ -22,3 +22,4 @@ faiss-cpu
 langchain-mcp-adapters
 fastmcp
 rpds-py
+a2a-sdk

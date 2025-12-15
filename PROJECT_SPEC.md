@@ -1,11 +1,11 @@
-# Nexus Enterprise - Project Specification
+# Enterprise Hub Enterprise - Project Specification
 
 ## 1. Executive Summary
-Nexus Enterprise is a modern, agentic IT management portal designed to unify disparate enterprise systems (ServiceNow, M365, Intune, SAP GRC) into a single, cohesive interface. It leverages AI agents to perform complex workflows, such as device compliance checks, access requests, and user onboarding, while providing a premium, glassmorphism-style user experience.
+Enterprise Hub Enterprise is a modern, agentic IT management portal designed to unify disparate enterprise systems (ServiceNow, M365, Intune, SAP GRC) into a single, cohesive interface. It leverages AI agents to perform complex workflows, such as device compliance checks, access requests, and user onboarding, while providing a premium, glassmorphism-style user experience.
 
 ## 2. Core Architecture
 - **Frontend**: React (Vite) + TypeScript + Tailwind CSS.
-  - **Design System**: "InfyMe Purple" theme, glassmorphism, responsive dashboard.
+  - **Design System**: "Enterprise Hub Purple" theme, glassmorphism, responsive dashboard.
   - **Key Pages**: Dashboard, Tickets, Access Requests, Users, Devices, Emails, Agent Streams.
 - **Backend**: FastAPI + Python.
   - **Agent Framework**: LangGraph + LangChain.

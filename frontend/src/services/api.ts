@@ -1,69 +1,41 @@
-// API Service Layer with Mock Failover
-import { MOCK_TICKETS, MOCK_SAP_REQUESTS, MOCK_M365_USERS, MOCK_INTUNE_DEVICES, MOCK_EMAILS } from '../data/mockData';
-
+// API Service Layer
 const API_BASE_URL = 'http://localhost:8000/api';
 
-// Helper function to handle API calls with fallback to mock data
-async function apiCall<T>(endpoint: string, options?: RequestInit, mockData?: T): Promise<T> {
-    try {
-        const token = localStorage.getItem('auth_token');
-        const headers = {
-            'Content-Type': 'application/json',
-            ...(token && { 'Authorization': `Bearer ${token}` }),
-            ...options?.headers,
-        };
+// Helper function to handle API calls
+async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    const token = localStorage.getItem('auth_token');
+    const headers = {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+        ...options?.headers,
+    };
 
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            ...options,
-            headers,
-        });
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers,
+    });
 
-        if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.warn(`API call failed for ${endpoint}, using mock data:`, error);
-        if (mockData !== undefined) {
-            return mockData;
-        }
-        throw error;
+    if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
     }
+
+    return await response.json();
 }
 
 // Authentication API
 export const authApi = {
     login: async (email: string, password: string) => {
-        // For auth, we might want to fail if API is down, or allow demo login
-        try {
-            const response = await fetch(`${API_BASE_URL}/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+        });
 
-            if (!response.ok) {
-                throw new Error('Invalid credentials');
-            }
-
-            return await response.json();
-        } catch (e) {
-            console.warn("Auth API failed, falling back to demo mode if applicable");
-            // Fallback for demo users
-            if (password === 'admin123' || password === 'user123' || password === 'approver123') {
-                return {
-                    token: 'mock-jwt-token',
-                    user: {
-                        id: 1,
-                        email: email,
-                        username: email.split('@')[0],
-                        role: password.replace('123', '')
-                    }
-                };
-            }
-            throw e;
+        if (!response.ok) {
+            throw new Error('Invalid credentials');
         }
+
+        return await response.json();
     },
 
     logout: async () => {
@@ -76,11 +48,11 @@ export const authApi = {
 export const ticketsApi = {
     list: async (filters?: any) => {
         const params = new URLSearchParams(filters);
-        return apiCall<any[]>(`/tickets?${params}`, {}, MOCK_TICKETS);
+        return apiCall<any[]>(`/tickets?${params}`);
     },
 
     get: async (ticketId: string) => {
-        return apiCall<any>(`/tickets/${ticketId}`, {}, MOCK_TICKETS.find(t => t.id === ticketId) || MOCK_TICKETS[0]);
+        return apiCall<any>(`/tickets/${ticketId}`);
     },
 
     create: async (data: any) => {
@@ -123,11 +95,11 @@ export const ticketsApi = {
 export const accessRequestsApi = {
     list: async (filters?: any) => {
         const params = new URLSearchParams(filters);
-        return apiCall<any[]>(`/access-requests?${params}`, {}, MOCK_SAP_REQUESTS);
+        return apiCall<any[]>(`/access-requests?${params}`);
     },
 
     get: async (requestId: string) => {
-        return apiCall<any>(`/access-requests/${requestId}`, {}, MOCK_SAP_REQUESTS.find(r => r.id === requestId) || MOCK_SAP_REQUESTS[0]);
+        return apiCall<any>(`/access-requests/${requestId}`);
     },
 
     create: async (data: any) => {
@@ -163,11 +135,11 @@ export const accessRequestsApi = {
 export const usersApi = {
     list: async (filters?: any) => {
         const params = new URLSearchParams(filters);
-        return apiCall<any[]>(`/users?${params}`, {}, MOCK_M365_USERS);
+        return apiCall<any[]>(`/users?${params}`);
     },
 
     get: async (userId: number) => {
-        return apiCall<any>(`/users/${userId}`, {}, MOCK_M365_USERS.find(u => u.id === userId) || MOCK_M365_USERS[0]);
+        return apiCall<any>(`/users/${userId}`);
     },
 
     create: async (data: any) => {
@@ -203,11 +175,11 @@ export const usersApi = {
 export const devicesApi = {
     list: async (filters?: any) => {
         const params = new URLSearchParams(filters);
-        return apiCall<any[]>(`/devices?${params}`, {}, MOCK_INTUNE_DEVICES);
+        return apiCall<any[]>(`/devices?${params}`);
     },
 
     get: async (deviceId: string) => {
-        return apiCall<any>(`/devices/${deviceId}`, {}, MOCK_INTUNE_DEVICES.find(d => d.id === deviceId) || MOCK_INTUNE_DEVICES[0]);
+        return apiCall<any>(`/devices/${deviceId}`);
     },
 
     provision: async (data: any) => {
@@ -242,11 +214,11 @@ export const devicesApi = {
 export const emailsApi = {
     list: async (filters?: any) => {
         const params = new URLSearchParams(filters);
-        return apiCall<any[]>(`/emails?${params}`, {}, MOCK_EMAILS);
+        return apiCall<any[]>(`/emails?${params}`);
     },
 
     get: async (emailId: string) => {
-        return apiCall<any>(`/emails/${emailId}`, {}, MOCK_EMAILS.find(e => e.id === emailId) || MOCK_EMAILS[0]);
+        return apiCall<any>(`/emails/${emailId}`);
     },
 
     send: async (data: any) => {
@@ -270,28 +242,69 @@ export const emailsApi = {
     },
 };
 
-// Agent Streams API (WebSocket)
+// Resources API
+export const resourcesApi = {
+    getVMs: async () => {
+        // Force array return
+        const res = await apiCall<any[]>('/resources/vms');
+        return Array.isArray(res) ? res : [];
+    },
+
+    getApps: async () => {
+        const res = await apiCall<any[]>('/resources/apps');
+        return Array.isArray(res) ? res : [];
+    },
+
+    getRGs: async () => {
+        const res = await apiCall<any[]>('/resources/rgs');
+        return Array.isArray(res) ? res : [];
+    },
+
+    getSAs: async () => {
+        const res = await apiCall<any[]>('/resources/service-accounts');
+        return Array.isArray(res) ? res : [];
+    },
+};
+
+// Agent Streams API (Deprecated placeholders to prevent errors)
 export const agentApi = {
     sendMessage: async (message: string) => {
-        return apiCall<any>('/agent/chat', {
-            method: 'POST',
-            body: JSON.stringify({ message }),
-        });
+        // No-op
+        return {};
     },
-
-    // WebSocket connection for real-time updates
     connectWebSocket: (onMessage: (data: any) => void, clientId: string = "default") => {
-        const ws = new WebSocket(`ws://localhost:8000/ws/chat/${clientId}`);
-
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            onMessage(data);
-        };
-
-        ws.onerror = (error) => {
-            console.error('WebSocket error:', error);
-        };
-
-        return ws;
+        // No-op
+        return { close: () => { }, send: () => { } } as unknown as WebSocket;
     },
+};
+
+// RBAC API
+export const rbacApi = {
+    getApplications: async () => {
+        const res = await apiCall<any[]>('/rbac/applications');
+        return Array.isArray(res) ? res : [];
+    },
+
+    getFlavors: async () => {
+        const res = await apiCall<any[]>('/rbac/flavors');
+        return Array.isArray(res) ? res : [];
+    },
+
+    getRoles: async (applicationId?: number) => {
+        const query = applicationId ? `?application_id=${applicationId}` : '';
+        const res = await apiCall<any[]>(`/rbac/roles${query}`);
+        return Array.isArray(res) ? res : [];
+    },
+
+    getUserRoles: async (userId: number) => {
+        const res = await apiCall<any[]>(`/rbac/users/${userId}/roles`);
+        return Array.isArray(res) ? res : [];
+    },
+
+    assignRole: async (userId: number, roleId: number) => {
+        return apiCall<any>(`/rbac/assign`, {
+            method: 'POST',
+            body: JSON.stringify({ user_id: userId, role_id: roleId }),
+        });
+    }
 };

@@ -29,12 +29,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Load token from localStorage on mount
   useEffect(() => {
-    const storedToken = localStorage.getItem('auth_token');
-    const storedUser = localStorage.getItem('auth_user');
+    try {
+      const storedToken = localStorage.getItem('auth_token');
+      const storedUser = localStorage.getItem('auth_user');
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      if (storedToken && storedUser && storedUser !== 'undefined') {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      } else {
+        // Cleanup invalid state
+        localStorage.removeItem('auth_user');
+        localStorage.removeItem('auth_token');
+        setToken(null);
+        setUser(null);
+      }
+    } catch (error) {
+      console.error('Failed to restore auth state:', error);
+      // Cleanup corruption
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      setToken(null);
+      setUser(null);
     }
     setIsLoading(false);
   }, []);

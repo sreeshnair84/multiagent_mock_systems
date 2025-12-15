@@ -12,7 +12,7 @@ import json
 from langchain_core.messages import HumanMessage
 
 # Import API routers
-from app.api import auth, users, onboarding
+from app.api import auth, users, onboarding, rbac
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
         # Ensure tables are created
         await checkpointer.setup()
         
-        app.state.graph = create_supervisor_graph(checkpointer=checkpointer)
+        app.state.graph = await create_supervisor_graph(checkpointer=checkpointer)
         
         yield
         # cleanup happens on exit
@@ -45,14 +45,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include API routers
-app.include_router(auth.router)
-app.include_router(users.router)
-app.include_router(onboarding.router)
+# Include API routers with /api prefix to match frontend expectations
+app.include_router(auth.router, prefix="/api")
+app.include_router(users.router, prefix="/api")
+app.include_router(onboarding.router, prefix="/api")
+app.include_router(rbac.router, prefix="/api")
 
 # Import and include data router
 from app.api import data
-app.include_router(data.router, tags=["Data"])
+app.include_router(data.router, prefix="/api", tags=["Data"])
 
 # Include MCP router for listing servers
 from app.mcp.mcp_router import router as mcp_router
@@ -122,4 +123,4 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)

@@ -24,11 +24,21 @@ class LoginRequest(BaseModel):
     password: str
 
 
+
+class UserResponse(BaseModel):
+    id: int
+    email: str
+    username: str
+    role: str
+    job_title: Optional[str] = None
+    department: Optional[str] = None
+
 class LoginResponse(BaseModel):
     token: str
     roles: List[str]
     expires: str
     user_id: int
+    user: UserResponse
 
 
 class ValidateResponse(BaseModel):
@@ -46,14 +56,22 @@ async def login(request: LoginRequest):
     if "error" in result:
         raise HTTPException(status_code=401, detail=result["error"])
     
-    # Get user roles
+    # Get user roles and details
     user_info = await get_user_roles(request.email)
     
     return LoginResponse(
         token=result["token"],
         roles=[user_info.get("role", "user")],
         expires=result["expires_at"],
-        user_id=result["user_id"]
+        user_id=result["user_id"],
+        user=UserResponse(
+            id=result["user_id"],
+            email=user_info.get("email"),
+            username=user_info.get("username", user_info.get("email").split("@")[0]),
+            role=user_info.get("role", "user"),
+            job_title=user_info.get("job_title"),
+            department=user_info.get("department")
+        )
     )
 
 

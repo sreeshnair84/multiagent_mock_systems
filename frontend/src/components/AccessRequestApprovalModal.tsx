@@ -14,34 +14,30 @@ const AccessRequestApprovalModal: React.FC<AccessRequestApprovalModalProps> = ({
     const { user } = useAuth();
     const [remarks, setRemarks] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [action, setAction] = useState<'approve' | 'reject' | null>(null);
 
     if (!isOpen || !request) return null;
 
-    const handleAction = async () => {
-        if (!action) return;
-
+    const handleAction = async (actionType: 'approve' | 'reject') => {
         // Require remarks for rejection
-        if (action === 'reject' && !remarks.trim()) {
+        if (actionType === 'reject' && !remarks.trim()) {
             alert('Please provide remarks for rejection.');
             return;
         }
 
         setIsSubmitting(true);
         try {
-            if (action === 'approve') {
-                await accessRequestsApi.approve(request.request_id, user?.email || 'admin@nexus.com');
+            if (actionType === 'approve') {
+                await accessRequestsApi.approve(request.request_id, user?.email || 'admin@Enterprise Hub.com');
             } else {
-                await accessRequestsApi.reject(request.request_id, user?.email || 'admin@nexus.com', remarks);
+                await accessRequestsApi.reject(request.request_id, user?.email || 'admin@Enterprise Hub.com', remarks);
             }
 
             onRequestUpdated();
             onClose();
             setRemarks('');
-            setAction(null);
         } catch (error) {
             console.error('Failed to process request', error);
-            alert(`Failed to ${action} request`);
+            alert(`Failed to ${actionType} request`);
         } finally {
             setIsSubmitting(false);
         }
@@ -58,7 +54,7 @@ const AccessRequestApprovalModal: React.FC<AccessRequestApprovalModalProps> = ({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose}></div>
-            <div className="glass-card w-full max-w-lg relative z-10 animate-scale-in">
+            <div className="glass-card w-full max-w-lg relative z-10 animate-scale-in p-6">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-gray-900">Review Access Request</h2>
                     <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
@@ -104,9 +100,7 @@ const AccessRequestApprovalModal: React.FC<AccessRequestApprovalModalProps> = ({
                     ) : (
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Remarks <span className={action === 'reject' ? 'text-red-500' : 'text-gray-400'}>
-                                    {action === 'reject' ? '(Required)' : '(Optional)'}
-                                </span>
+                                Remarks <span className="text-gray-400">(Optional for Approval)</span>
                             </label>
                             <textarea
                                 className="input h-24 resize-none"
@@ -120,20 +114,16 @@ const AccessRequestApprovalModal: React.FC<AccessRequestApprovalModalProps> = ({
                     {request.status === 'Pending' && (
                         <div className="flex gap-3 pt-2">
                             <button
-                                onClick={() => { setAction('reject'); handleAction(); }}
+                                onClick={() => handleAction('reject')}
                                 className={`flex-1 btn bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 disabled={isSubmitting}
-                                type="button"
-                                onMouseDown={() => setAction('reject')}
                             >
                                 Reject
                             </button>
                             <button
-                                onClick={() => { setAction('approve'); handleAction(); }}
+                                onClick={() => handleAction('approve')}
                                 className={`flex-1 btn bg-green-600 text-white hover:bg-green-700 border-transparent ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 disabled={isSubmitting}
-                                type="button"
-                                onMouseDown={() => setAction('approve')}
                             >
                                 Approve
                             </button>

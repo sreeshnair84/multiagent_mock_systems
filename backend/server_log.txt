@@ -1,0 +1,235 @@
+INFO:     Started server process [2164]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8006 (Press CTRL+C to quit)
+Initializing event loop...
+Creating app...
+[DEBUG] Initialized LangGraphAgentExecutor for VM Provisioning Agent. Has execute_streaming: True
+[DEBUG SERVER] VM Executor dir: ['__abstractmethods__', '__annotations__', '__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__slots__', '__str__', '__subclasshook__', '__weakref__', '_abc_impl', '_sessions', 'agent_description', 'agent_name', 'cancel', 'execute', 'execute_streaming', 'get_agent_card', 'graph']
+[DEBUG SERVER] VM Executor has execute_streaming: True
+[DEBUG] Initialized LangGraphAgentExecutor for Intune Management Agent. Has execute_streaming: True
+[DEBUG] Initialized LangGraphAgentExecutor for Access Management Agent. Has execute_streaming: True
+App created successfully.
+Starting uvicorn...
+INFO:     127.0.0.1:59678 - "POST /agents/intune/v1/message%3Astream HTTP/1.1" 200 OK
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 409, in run_asgi
+  |     result = await app(  # type: ignore[func-returns-value]
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+  |     return await self.app(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\fastapi\applications.py", line 1139, in __call__
+  |     await super().__call__(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\applications.py", line 107, in __call__
+  |     await self.middleware_stack(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+  |     raise exc
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+  |     await self.app(scope, receive, _send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
+  |     await self.app(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+  |     raise exc
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+  |     await app(scope, receive, sender)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+  |     await self.app(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\routing.py", line 716, in __call__
+  |     await self.middleware_stack(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\routing.py", line 736, in app
+  |     await route.handle(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\routing.py", line 462, in handle
+  |     await self.app(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\fastapi\applications.py", line 1139, in __call__
+  |     await super().__call__(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\applications.py", line 107, in __call__
+  |     await self.middleware_stack(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+  |     raise exc
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+  |     await self.app(scope, receive, _send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+  |     raise exc
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+  |     await app(scope, receive, sender)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+  |     await self.app(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\routing.py", line 716, in __call__
+  |     await self.middleware_stack(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\routing.py", line 736, in app
+  |     await route.handle(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\routing.py", line 290, in handle
+  |     await self.app(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\fastapi\routing.py", line 120, in app
+  |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+  |     raise exc
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+  |     await app(scope, receive, sender)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\fastapi\routing.py", line 107, in app
+  |     await response(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\sse_starlette\sse.py", line 255, in __call__
+  |     async with anyio.create_task_group() as task_group:
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\anyio\_backends\_asyncio.py", line 783, in __aexit__
+  |     raise BaseExceptionGroup(
+  | exceptiongroup.ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 610, in _ConvertFieldValuePair
+    |     raise ParseError(
+    | google.protobuf.json_format.ParseError: Message type "a2a.v1.SendMessageRequest" has no field named "task_id" at "SendMessageRequest".
+    |  Available Fields(except extensions): "['message', 'configuration', 'metadata']"
+    | 
+    | The above exception was the direct cause of the following exception:
+    | 
+    | Traceback (most recent call last):
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\sse_starlette\sse.py", line 258, in cancel_on_finish
+    |     await coro()
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\sse_starlette\sse.py", line 177, in _stream_response
+    |     async for data in self.body_iterator:
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\a2a\server\apps\rest\rest_adapter.py", line 132, in event_generator
+    |     async for item in stream:
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\a2a\server\request_handlers\rest_handler.py", line 113, in on_message_send_stream
+    |     Parse(body, params)
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 470, in Parse
+    |     raise e
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 466, in Parse
+    |     return ParseDict(
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 500, in ParseDict
+    |     parser.ConvertMessage(js_dict, message, '')
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 546, in ConvertMessage
+    |     self._ConvertFieldValuePair(value, message, path)
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 718, in _ConvertFieldValuePair
+    |     raise ParseError(str(e)) from e
+    | google.protobuf.json_format.ParseError: Message type "a2a.v1.SendMessageRequest" has no field named "task_id" at "SendMessageRequest".
+    |  Available Fields(except extensions): "['message', 'configuration', 'metadata']"
+    +------------------------------------
+INFO:     127.0.0.1:62705 - "POST /agents/intune/v1/message%3Astream HTTP/1.1" 200 OK
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 409, in run_asgi
+  |     result = await app(  # type: ignore[func-returns-value]
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+  |     return await self.app(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\fastapi\applications.py", line 1139, in __call__
+  |     await super().__call__(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\applications.py", line 107, in __call__
+  |     await self.middleware_stack(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+  |     raise exc
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+  |     await self.app(scope, receive, _send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
+  |     await self.app(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+  |     raise exc
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+  |     await app(scope, receive, sender)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+  |     await self.app(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\routing.py", line 716, in __call__
+  |     await self.middleware_stack(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\routing.py", line 736, in app
+  |     await route.handle(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\routing.py", line 462, in handle
+  |     await self.app(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\fastapi\applications.py", line 1139, in __call__
+  |     await super().__call__(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\applications.py", line 107, in __call__
+  |     await self.middleware_stack(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+  |     raise exc
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+  |     await self.app(scope, receive, _send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+  |     raise exc
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+  |     await app(scope, receive, sender)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+  |     await self.app(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\routing.py", line 716, in __call__
+  |     await self.middleware_stack(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\routing.py", line 736, in app
+  |     await route.handle(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\routing.py", line 290, in handle
+  |     await self.app(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\fastapi\routing.py", line 120, in app
+  |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+  |     raise exc
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+  |     await app(scope, receive, sender)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\fastapi\routing.py", line 107, in app
+  |     await response(scope, receive, send)
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\sse_starlette\sse.py", line 255, in __call__
+  |     async with anyio.create_task_group() as task_group:
+  |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\anyio\_backends\_asyncio.py", line 783, in __aexit__
+  |     raise BaseExceptionGroup(
+  | exceptiongroup.ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 954, in _ConvertScalarFieldValue
+    |     number = int(value)
+    | ValueError: invalid literal for int() with base 10: 'user'
+    | 
+    | The above exception was the direct cause of the following exception:
+    | 
+    | Traceback (most recent call last):
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 959, in _ConvertScalarFieldValue
+    |     raise EnumStringValueParseError(
+    | google.protobuf.json_format.EnumStringValueParseError: Invalid enum value user for enum type a2a.v1.Role
+    | 
+    | The above exception was the direct cause of the following exception:
+    | 
+    | Traceback (most recent call last):
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 709, in _ConvertFieldValuePair
+    |     self._ConvertAndSetScalar(
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 872, in _ConvertAndSetScalar
+    |     value = _ConvertScalarFieldValue(js_value, field, path)
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 975, in _ConvertScalarFieldValue
+    |     raise EnumStringValueParseError('{0} at {1}'.format(e, path)) from e
+    | google.protobuf.json_format.EnumStringValueParseError: Invalid enum value user for enum type a2a.v1.Role at SendMessageRequest.message.role
+    | 
+    | The above exception was the direct cause of the following exception:
+    | 
+    | Traceback (most recent call last):
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 707, in _ConvertFieldValuePair
+    |     self.ConvertMessage(value, sub_message, '{0}.{1}'.format(path, name))
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 546, in ConvertMessage
+    |     self._ConvertFieldValuePair(value, message, path)
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 714, in _ConvertFieldValuePair
+    |     raise ParseError(
+    | google.protobuf.json_format.ParseError: Failed to parse role field: Invalid enum value user for enum type a2a.v1.Role at SendMessageRequest.message.role.
+    | 
+    | The above exception was the direct cause of the following exception:
+    | 
+    | Traceback (most recent call last):
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\sse_starlette\sse.py", line 258, in cancel_on_finish
+    |     await coro()
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\sse_starlette\sse.py", line 177, in _stream_response
+    |     async for data in self.body_iterator:
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\a2a\server\apps\rest\rest_adapter.py", line 132, in event_generator
+    |     async for item in stream:
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\a2a\server\request_handlers\rest_handler.py", line 113, in on_message_send_stream
+    |     Parse(body, params)
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 470, in Parse
+    |     raise e
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 466, in Parse
+    |     return ParseDict(
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 500, in ParseDict
+    |     parser.ConvertMessage(js_dict, message, '')
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 546, in ConvertMessage
+    |     self._ConvertFieldValuePair(value, message, path)
+    |   File "C:\Users\Srees\project\antigravity\backend\venv\lib\site-packages\google\protobuf\json_format.py", line 714, in _ConvertFieldValuePair
+    |     raise ParseError(
+    | google.protobuf.json_format.ParseError: Failed to parse message field: Failed to parse role field: Invalid enum value user for enum type a2a.v1.Role at SendMessageRequest.message.role..
+    +------------------------------------
+INFO:     127.0.0.1:49729 - "POST /agents/intune/v1/message%3Astream HTTP/1.1" 200 OK

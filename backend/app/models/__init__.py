@@ -6,4 +6,7 @@ from .ticket import Ticket
 from .device import Device
 from .email import Email
 
-__all__ = ["User", "Role", "Token", "Conversation", "Message", "GraphCheckpoint", "AccessRequest", "Ticket", "Device", "Email"]
+from .rbac import UserFlavor, Application, AppRole, AppPermission, UserAppRoleLink
+
+__all__ = ["User", "Role", "Token", "Conversation", "Message", "GraphCheckpoint", "AccessRequest", "Ticket", "Device", "Email", 
+           "UserFlavor", "Application", "AppRole", "AppPermission", "UserAppRoleLink"]

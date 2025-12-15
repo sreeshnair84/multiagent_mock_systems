@@ -41,7 +41,9 @@ async def get_user_roles(user_email: str) -> Dict[str, Any]:
             "email": user.email,
             "username": user.username,
             "role": user.role,
-            "status": user.status
+            "status": user.status,
+            "job_title": user.job_title,
+            "department": user.department
         }
 
 
@@ -107,23 +109,27 @@ async def generate_token(user_email: str, password: str) -> Dict[str, Any]:
         if not user:
             return {"error": "Invalid credentials"}
         
-        # Verify password
+        # Validate password
         if not bcrypt.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8')):
             return {"error": "Invalid credentials"}
+        
+        # Capture user attributes before commit (session.commit expires instances)
+        user_id = user.id
+        user_role = user.role
         
         # Generate JWT
         expires_at = datetime.utcnow() + timedelta(hours=24)
         payload = {
-            "user_id": user.id,
+            "user_id": user_id,
             "email": user.email,
-            "role": user.role,
+            "role": user_role,
             "exp": expires_at
         }
         token_str = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
         
         # Save token to database
         token = Token(
-            user_id=user.id,
+            user_id=user_id,
             token=token_str,
             expires_at=expires_at
         )
@@ -133,8 +139,8 @@ async def generate_token(user_email: str, password: str) -> Dict[str, Any]:
         return {
             "token": token_str,
             "expires_at": expires_at.isoformat(),
-            "user_id": user.id,
-            "role": user.role
+            "user_id": user_id,
+            "role": user_role
         }
 
 

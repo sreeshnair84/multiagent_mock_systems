@@ -4,16 +4,21 @@ from app.agents.supervisor import supervisor_agent
 
 # Import Subgraphs
 from app.agents.subgraphs.servicenow import servicenow_graph
-from app.agents.subgraphs.intune import intune_graph
+
 from app.agents.subgraphs.m365 import m365_graph
 from app.agents.subgraphs.outlook import outlook_graph
 from app.agents.subgraphs.access import access_graph
 from app.agents.subgraphs.workflow import workflow_graph
 from app.agents.subgraphs.context import knowledge_graph
 
-def create_supervisor_graph(checkpointer=None):
+async def create_supervisor_graph(checkpointer=None):
     workflow = StateGraph(AgentState)
 
+    # Initialize Agents (Subgraphs)
+    # Using lazy imports or direct async creation if needed
+    from app.agents.intune_agent import create_intune_graph
+    intune_graph = await create_intune_graph()
+    
     # Add Nodes
     workflow.add_node("Supervisor", supervisor_agent)
     

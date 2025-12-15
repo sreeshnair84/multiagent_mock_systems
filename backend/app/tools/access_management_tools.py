@@ -218,3 +218,71 @@ async def onboard_user(email: str, username: str, password: str, device_serial: 
     results["workflow_id"] = f"ONBOARD-{user_result['user_id']}"
     
     return results
+
+
+async def calculate_risk(user_email: str, resource: str, action: str) -> Dict[str, Any]:
+    """Calculates risk score for an access request.
+    
+    Args:
+        user_email: User requesting access
+        resource: Resource to access
+        action: Action requested
+        
+    Returns:
+        Dict with risk score and factors
+    """
+    # Mock logic
+    risk_score = 10
+    factors = []
+    
+    if action.lower() in ["admin", "write", "delete"]:
+        risk_score += 40
+        factors.append("High privilege action")
+        
+    if "production" in resource.lower():
+        risk_score += 30
+        factors.append("Critical resource")
+        
+    return {
+        "risk_score": risk_score,
+        "risk_level": "High" if risk_score > 50 else "Low",
+        "factors": factors
+    }
+
+# --- RBAC Mock Tools ---
+
+ROLE_ASSIGNMENTS = [
+    {"user_email": "alice@example.com", "role": "Contributor", "scope": "/subscriptions/sub-123/resourceGroups/default-rg"},
+    {"user_email": "bob@example.com", "role": "Reader", "scope": "/subscriptions/sub-123"}
+]
+
+async def assign_role(user_email: str, role: str, scope: str):
+    """Assign an RBAC role to a user.
+    
+    Args:
+        user_email: User email.
+        role: Role name (e.g., Owner, Contributor, Reader).
+        scope: Azure Scope (Subscription, RG, or Resource ID).
+    """
+    assignment = {
+        "user_email": user_email,
+        "role": role,
+        "scope": scope,
+        "assigned_at": datetime.utcnow().isoformat()
+    }
+    ROLE_ASSIGNMENTS.append(assignment)
+    return {
+        "status": "Success",
+        "message": f"Assigned role '{role}' to '{user_email}' at scope '{scope}'."
+    }
+
+async def list_role_assignments(user_email: Optional[str] = None):
+    """List RBAC role assignments.
+    
+    Args:
+        user_email: Filter by user email.
+    """
+    if user_email:
+        return [r for r in ROLE_ASSIGNMENTS if r['user_email'] == user_email]
+    return ROLE_ASSIGNMENTS
+

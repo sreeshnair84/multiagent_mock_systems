@@ -24,12 +24,12 @@ const LoginPage: React.FC = () => {
         }
     };
 
-    // Demo credentials helper
+    // Demo credentials helper - Using backend seeded users
     const fillDemoCredentials = (role: 'admin' | 'user' | 'approver') => {
         const demoAccounts = {
-            admin: { email: 'john.doe@contoso.com', password: 'admin123' },
-            user: { email: 'alice.smith@contoso.com', password: 'user123' },
-            approver: { email: 'bob.jones@contoso.com', password: 'approver123' }
+            admin: { email: 'alex.admin@company.com', password: 'password123' },
+            user: { email: 'sarah.staff@company.com', password: 'password123' },
+            approver: { email: 'mike.manager@company.com', password: 'password123' }
         };
         setEmail(demoAccounts[role].email);
         setPassword(demoAccounts[role].password);
@@ -50,7 +50,7 @@ const LoginPage: React.FC = () => {
                         <span className="text-3xl">🚀</span>
                     </div>
                     <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-600">
-                        Nexus Enterprise
+                        Enterprise Hub Enterprise
                     </h2>
                     <p className="text-gray-500 mt-2">Enterprise Agent Orchestration</p>
                 </div>
@@ -74,7 +74,7 @@ const LoginPage: React.FC = () => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="input"
-                            placeholder="john.doe@contoso.com"
+                            placeholder="alex.admin@company.com"
                             required
                         />
                     </div>

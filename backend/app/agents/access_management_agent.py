@@ -6,25 +6,28 @@ Includes memory tools for user preferences and conversation context
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from app.agents.state import AgentState
 from app.core.llm import get_llm
-from app.mcp.mcp_client import get_tools_for_server
+from app.mcp.mcp_client_langgraph import get_mcp_tools
 from app.tools.memory_tools import MEMORY_TOOLS
+from langgraph.graph import StateGraph, START, END
+from langgraph.prebuilt import ToolNode
+from typing import Literal
 
 
-async def access_management_agent(state: AgentState):
+async def create_access_graph():
     """
-    Access Management Agent: Handles SAP-like access request workflows and user onboarding.
-    Only calls Access Management MCP server (port 8005).
-    Has access to long-term memory tools.
+    Creates the Access Management Workflow Graph.
     """
     model = get_llm()
     
     # Get tools from Access Management MCP server + memory tools
-    access_tools = await get_tools_for_server("access")
+    # Using prefix matching for composite server
+    access_tools = await get_mcp_tools(prefix="access")
     all_tools = access_tools + MEMORY_TOOLS
     model = model.bind_tools(all_tools)
 
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", """You are the Access Management Agent. You ONLY handle access request workflows and user onboarding processes.
+    async def access_agent_node(state: AgentState):
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", """You are the Access Management Agent. You ONLY handle access request workflows and user onboarding processes.
 
 Your ONLY available Access Management tools are from the Access Management MCP server (port 8005):
 - submit_access_request: Submit new access requests for approval
@@ -50,12 +53,35 @@ You do NOT have direct access to user management, devices, or tickets.
 The onboard_user tool internally coordinates with other services, but you should not call other agents' tools directly.
 
 Follow the 48-hour SLA for access requests. Ensure proper role validation for approvals."""),
-        MessagesPlaceholder(variable_name="messages"),
-    ])
+            MessagesPlaceholder(variable_name="messages"),
+        ])
 
-    chain = prompt | model
-    response = await chain.ainvoke(state)
+        chain = prompt | model
+        response = await chain.ainvoke(state)
+        return {"messages": [response]}
+
+    workflow = StateGraph(AgentState)
+    workflow.add_node("agent", access_agent_node)
+    workflow.add_node("tools", ToolNode(all_tools))
     
-    return {
-        "messages": [response]
-    }
+    workflow.add_edge(START, "agent")
+    
+    def should_continue(state: AgentState) -> Literal["tools", "end"]:
+        messages = state["messages"]
+        last_message = messages[-1]
+        if last_message.tool_calls:
+            return "tools"
+        return "end"
+
+    workflow.add_conditional_edges(
+        "agent",
+        should_continue,
+        {
+            "tools": "tools",
+            "end": END
+        }
+    )
+    
+    workflow.add_edge("tools", "agent")
+    
+    return workflow.compile()

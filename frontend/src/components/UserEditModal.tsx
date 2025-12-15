@@ -39,7 +39,11 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ isOpen, onClose, user, on
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await usersApi.update(user.id, formData);
+            const userId = user.id || user.user_id;
+            if (!userId) {
+                throw new Error("User ID is missing");
+            }
+            await usersApi.update(userId, formData);
 
             // If license changed, also call assignLicense for realism (api supports separate calls)
             if (user.license_sku !== formData.license_sku) {
@@ -72,7 +76,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ isOpen, onClose, user, on
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose}></div>
-            <div className="glass-card w-full max-w-lg relative z-10 animate-scale-in">
+            <div className="glass-card w-full max-w-lg relative z-10 animate-scale-in p-6">
                 <div className="flex justify-between items-center mb-6">
                     <div>
                         <h2 className="text-xl font-bold text-gray-900">Edit User</h2>
@@ -131,8 +135,8 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ isOpen, onClose, user, on
                         <div className="grid grid-cols-3 gap-3">
                             {['E3', 'E5', 'F3', 'Business Basic'].map((sku) => (
                                 <label key={sku} className={`cursor-pointer border rounded-lg p-3 text-center transition-all ${formData.license_sku === sku
-                                        ? 'border-purple-600 bg-purple-50 text-purple-700 font-bold'
-                                        : 'border-gray-200 hover:border-purple-300'
+                                    ? 'border-purple-600 bg-purple-50 text-purple-700 font-bold'
+                                    : 'border-gray-200 hover:border-purple-300'
                                     }`}>
                                     <input
                                         type="radio"

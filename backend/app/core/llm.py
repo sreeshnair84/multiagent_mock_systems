@@ -16,7 +16,7 @@ def get_llm():
         )
     elif provider == "gemini":
         return ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash",  # Using flash model which is supported in v1beta
+            model="gemini-2.5-flash",  # Updated to available model
             temperature=0,
             google_api_key=settings.GEMINI_API_KEY,
             convert_system_message_to_human=True 

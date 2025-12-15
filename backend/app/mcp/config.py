@@ -8,7 +8,7 @@ import os
 MCP_TRANSPORT = os.getenv("MCP_TRANSPORT", "http")
 
 # Port for composite server (can be overridden by MCP_SERVER_PORT)
-COMPOSITE_PORT = int(os.getenv("MCP_COMPOSITE_PORT", "8000"))
+COMPOSITE_PORT = int(os.getenv("MCP_COMPOSITE_PORT", "8001"))
 
 def run_server(mcp_instance, server_name: str, port: int = None):
     """

@@ -47,7 +47,7 @@ const TicketEditModal: React.FC<TicketEditModalProps> = ({ isOpen, onClose, tick
             if (formData.work_notes && formData.work_notes.trim()) {
                 // Assuming current user is "System User" or get from auth context if available
                 // Simplification: using hardcoded email or a generic one if auth not passed
-                const authorEmail = 'system@nexus.com';
+                const authorEmail = 'system@Enterprise Hub.com';
                 await ticketsApi.addWorkNote(ticket.ticket_id, formData.work_notes, authorEmail);
             }
 

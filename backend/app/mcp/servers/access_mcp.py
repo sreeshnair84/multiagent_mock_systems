@@ -13,7 +13,9 @@ from app.tools.access_management_tools import (
     get_workflow_status,
     notify_approver,
     onboard_user,
-    calculate_risk
+    calculate_risk,
+    assign_role,
+    list_role_assignments
 )
 
 # Initialize FastMCP server
@@ -21,16 +23,18 @@ mcp = FastMCP("AccessManagement")
 
 @mcp.tool()
 async def calculate_access_risk(
+    user_email: str,
     resource: str,
     action: str
 ) -> dict:
     """Calculates risk level for an access request.
     
     Args:
+        user_email: User requesting access
         resource: Resource to access
         action: Action requested
     """
-    return await calculate_risk(resource, action)
+    return await calculate_risk(user_email, resource, action)
     
 
 
@@ -112,6 +116,32 @@ async def onboard_new_user(
         device_serial: Optional device serial number to provision
     """
     return await onboard_user(email, username, password, device_serial)
+
+@mcp.tool()
+async def assign_rbac_role(
+    user_email: str,
+    role: str,
+    scope: str
+) -> dict:
+    """Assign an RBAC role to a user.
+    
+    Args:
+        user_email: User email.
+        role: Role name.
+        scope: Azure Scope.
+    """
+    return await assign_role(user_email, role, scope)
+
+@mcp.tool()
+async def list_rbac_role_assignments(
+    user_email: str = None
+) -> list:
+    """List RBAC role assignments.
+    
+    Args:
+        user_email: Filter by user email.
+    """
+    return await list_role_assignments(user_email)
 
 
 if __name__ == "__main__":

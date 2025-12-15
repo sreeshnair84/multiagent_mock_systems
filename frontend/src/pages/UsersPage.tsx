@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { usersApi } from '../services/api';
 import UserCreateModal from '../components/UserCreateModal';
 import UserEditModal from '../components/UserEditModal';
+import UserRoleMappingModal from '../components/UserRoleMappingModal';
 import '../styles/design-system.css';
 
 interface User {
@@ -21,6 +22,7 @@ const UsersPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showRoleModal, setShowRoleModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
     useEffect(() => {
@@ -44,6 +46,11 @@ const UsersPage: React.FC = () => {
         setShowEditModal(true);
     };
 
+    const handleManageRoles = (user: User) => {
+        setSelectedUser(user);
+        setShowRoleModal(true);
+    };
+
     return (
         <div className="space-y-6 animate-fade-in">
             {/* Create Modal */}
@@ -59,6 +66,12 @@ const UsersPage: React.FC = () => {
                 onClose={() => setShowEditModal(false)}
                 user={selectedUser}
                 onUserUpdated={loadUsers}
+            />
+
+            <UserRoleMappingModal
+                isOpen={showRoleModal}
+                onClose={() => setShowRoleModal(false)}
+                user={selectedUser}
             />
 
             <div className="flex justify-between items-center">
@@ -91,8 +104,8 @@ const UsersPage: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                            {users.map((user) => (
-                                <tr key={user.id} className="hover:bg-gray-50 transition-colors group cursor-pointer" onClick={() => handleEditUser(user)}>
+                            {users.map((user: any) => (
+                                <tr key={user.id || user.user_id} className="hover:bg-gray-50 transition-colors group cursor-pointer" onClick={() => handleEditUser(user)}>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center">
                                             <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold mr-3 shadow-md">
@@ -121,6 +134,12 @@ const UsersPage: React.FC = () => {
                                             className="text-primary hover:text-primary-hover opacity-0 group-hover:opacity-100 transition-opacity"
                                         >
                                             Edit
+                                        </button>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleManageRoles(user); }}
+                                            className="text-purple-600 hover:text-purple-900 opacity-0 group-hover:opacity-100 transition-opacity ml-4"
+                                        >
+                                            Roles
                                         </button>
                                     </td>
                                 </tr>

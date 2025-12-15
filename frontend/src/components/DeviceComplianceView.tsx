@@ -40,7 +40,7 @@ const DeviceComplianceView: React.FC<DeviceComplianceViewProps> = ({ isOpen, onC
 
         setIsProcessing(true);
         try {
-            await devicesApi.wipe(device.id, user?.email || 'admin@nexus.com', true);
+            await devicesApi.wipe(device.id, user?.email || 'admin@Enterprise Hub.com', true);
             alert('Remote wipe command sent successfully.');
             onDeviceUpdated();
             onClose();

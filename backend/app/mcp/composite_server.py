@@ -10,6 +10,7 @@ EnterpriseHub provides unified access to:
 - Access control workflows
 - Outlook email operations
 - Workflow orchestration
+- Resource provisioning (VMs, App Services, etc.)
 """
 import sys
 import os
@@ -28,6 +29,7 @@ from app.mcp.servers.m365_mcp import mcp as m365_mcp
 from app.mcp.servers.access_mcp import mcp as access_mcp
 from app.mcp.servers.outlook_mcp import mcp as outlook_mcp
 from app.mcp.servers.workflow_mcp import mcp as workflow_mcp
+from app.mcp.servers.resource_mcp import mcp as resource_mcp
 
 # Create the main composite server
 mcp = FastMCP("EnterpriseHub")
@@ -43,6 +45,7 @@ mcp.mount(m365_mcp, prefix="m365")
 mcp.mount(access_mcp, prefix="access")
 mcp.mount(outlook_mcp, prefix="outlook")
 mcp.mount(workflow_mcp, prefix="workflow")
+mcp.mount(resource_mcp, prefix="resource")
 
 if __name__ == "__main__":
     # Start the composite server with configured transport (HTTP with CORS by default)

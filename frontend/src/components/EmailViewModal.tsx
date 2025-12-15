@@ -59,7 +59,10 @@ const EmailViewModal: React.FC<EmailViewModalProps> = ({ isOpen, onClose, email,
                 {/* Email Body */}
                 <div className="flex-1 overflow-y-auto p-8 bg-white">
                     <div className="prose max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
-                        {email.body}
+                        <div
+                            className="prose max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap"
+                            dangerouslySetInnerHTML={{ __html: email.body }}
+                        />
                     </div>
                 </div>
 
