@@ -3,17 +3,22 @@ import '../styles/design-system.css';
 import { AgentService } from '../services/agentApi';
 import type { AgentId } from '../services/agentApi';
 import { useToast } from '../context/ToastContext';
+import { TypingIndicator } from '../components/chat/TypingIndicator';
+import { ToolCallCard } from '../components/chat/ToolCallCard';
+import { ConnectionStatus } from '../components/chat/ConnectionStatus';
 
 interface Message {
     id: string;
     type: 'user' | 'agent' | 'tool';
     content: string;
     timestamp: Date;
+    isStreaming?: boolean;
     toolCall?: {
         name: string;
         parameters: any;
         response: any;
         executionTime: number;
+        isExecuting?: boolean;
     };
 }
 
@@ -26,11 +31,9 @@ const AgentStreamsPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow>(null);
     const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+    const [isConnected, setIsConnected] = useState(true);
 
     const { addToast } = useToast();
-
-    // For "Thinking" expanders
-    const [expandedToolIds, setExpandedToolIds] = useState<Set<string>>(new Set());
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const recognitionRef = useRef<any>(null);
@@ -93,15 +96,6 @@ const AgentStreamsPage: React.FC = () => {
         }
     };
 
-    const toggleToolExpansion = (id: string) => {
-        setExpandedToolIds(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(id)) newSet.delete(id);
-            else newSet.add(id);
-            return newSet;
-        });
-    };
-
     const sendMessage = async (text: string = inputText) => {
         if (!text.trim()) return;
 
@@ -115,14 +109,13 @@ const AgentStreamsPage: React.FC = () => {
         setMessages(prev => [...prev, userMessage]);
         setInputText('');
         setIsLoading(true);
+        setIsConnected(true); // Assume connected when starting
 
         // Send via A2A Streaming
         let agentId: AgentId = 'intune'; // default
         if (selectedWorkflow === 'ACCESS_WORKFLOW') agentId = 'access';
         if (selectedWorkflow === 'RESOURCE_PROVISIONING') agentId = 'resource';
 
-        // Optimistic update
-        // We'll append partials to this message ID
         const responseId = (Date.now() + 1).toString();
         let currentContent = '';
 
@@ -131,57 +124,92 @@ const AgentStreamsPage: React.FC = () => {
             id: responseId,
             type: 'agent',
             content: '',
-            timestamp: new Date()
+            timestamp: new Date(),
+            isStreaming: true
         }]);
 
-        await AgentService.streamMessage(agentId, text, (event) => {
-            if (event.type === 'message_chunk') {
-                currentContent += event.content || '';
-                setMessages(prev => prev.map(m =>
-                    m.id === responseId ? { ...m, content: currentContent } : m
-                ));
-            } else if (event.type === 'tool_call') {
-                // Trigger Toast Notification
-                addToast(`Agent is performing action: ${event.data.tool_name}`, 'loading', 3000);
+        try {
+            await AgentService.streamMessage(agentId, text, (event) => {
+                console.log('[DEBUG] Received event:', event.type, event);
+                if (event.type === 'status_update') {
+                    // A2A sends status updates with the accumulated message
+                    const statusMessage = event.data?.status?.message || event.data?.message;
+                    console.log('[DEBUG] Status message:', statusMessage);
+                    if (statusMessage && statusMessage.parts) {
+                        const textPart = statusMessage.parts.find((p: any) => p.text);
+                        console.log('[DEBUG] Text part:', textPart);
+                        if (textPart) {
+                            currentContent = textPart.text;
+                            console.log('[DEBUG] Setting content:', currentContent);
+                            setMessages(prev => {
+                                const updated = prev.map(m =>
+                                    m.id === responseId ? { ...m, content: currentContent, isStreaming: true } : m
+                                );
+                                console.log('[DEBUG] Updated messages:', updated);
+                                return updated;
+                            });
+                        }
+                    }
+                } else if (event.type === 'message_chunk') {
+                    currentContent += event.content || '';
+                    setMessages(prev => prev.map(m =>
+                        m.id === responseId ? { ...m, content: currentContent, isStreaming: true } : m
+                    ));
+                } else if (event.type === 'tool_call') {
+                    addToast(`Agent is using tool: ${event.data.tool_name}`, 'info', 3000);
 
-                const toolMsg: Message = {
-                    id: Date.now().toString(), // unique ID for tool
-                    type: 'tool',
-                    content: event.data.tool_name || 'Tool Call',
-                    timestamp: new Date(),
-                    toolCall: {
-                        name: event.data.tool_name,
-                        parameters: event.data.parameters,
-                        response: event.data.result, // if available immediately
-                        executionTime: event.data.duration || 0
-                    }
-                };
-                setMessages(prev => {
-                    // split messages: insert tool before the streaming agent response?
-                    // actually A2A might send tool calls before final text.
-                    // For now, simpler to append.
-                    // But we have the 'responseId' message at the end.
-                    // Let's insert before it?
-                    const last = prev[prev.length - 1];
-                    if (last.id === responseId) {
-                        return [...prev.slice(0, -1), toolMsg, last];
-                    }
-                    return [...prev, toolMsg];
-                });
-            } else if (event.type === 'error') {
-                addToast(`Error: ${event.content}`, 'error');
-                console.error("Stream Error:", event.content);
-                setMessages(prev => [...prev, {
-                    id: Date.now().toString(),
-                    type: 'agent', // or system error
-                    content: `[Error: ${event.content}]`,
-                    timestamp: new Date()
-                }]);
+                    const toolMsg: Message = {
+                        id: Date.now().toString(),
+                        type: 'tool',
+                        content: event.data.tool_name || 'Tool Call',
+                        timestamp: new Date(),
+                        toolCall: {
+                            name: event.data.tool_name,
+                            parameters: event.data.parameters,
+                            response: event.data.result,
+                            executionTime: event.data.duration || 0,
+                            isExecuting: !event.data.result
+                        }
+                    };
+                    setMessages(prev => {
+                        const last = prev[prev.length - 1];
+                        if (last.id === responseId) {
+                            return [...prev.slice(0, -1), toolMsg, last];
+                        }
+                        return [...prev, toolMsg];
+                    });
+                } else if (event.type === 'error') {
+                    setIsConnected(false);
+                    addToast(`Error: ${event.content}`, 'error');
+                    console.error("Stream Error:", event.content);
+                    setMessages(prev => prev.map(m =>
+                        m.id === responseId ? { ...m, content: `❌ Error: ${event.content}`, isStreaming: false } : m
+                    ));
+                }
+            });
+
+            console.log('[DEBUG] Stream complete, final content:', currentContent);
+            // Mark streaming as complete
+            setMessages(prev => {
+                const updated = prev.map(m =>
+                    m.id === responseId ? { ...m, isStreaming: false } : m
+                );
+                console.log('[DEBUG] Final messages:', updated);
+                return updated;
+            });
+
+            if (currentContent) {
+                speak(currentContent);
             }
-        });
-
-        setIsLoading(false);
-        speak(currentContent);
+        } catch (error: any) {
+            setIsConnected(false);
+            addToast(`Connection error: ${error.message}`, 'error');
+            setMessages(prev => prev.map(m =>
+                m.id === responseId ? { ...m, content: `❌ Failed to connect to agent`, isStreaming: false } : m
+            ));
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleWorkflowSelect = (workflow: Workflow) => {
@@ -194,6 +222,8 @@ const AgentStreamsPage: React.FC = () => {
 
     return (
         <div className="h-full flex flex-col bg-gray-50 relative">
+            {/* Connection Status */}
+            <ConnectionStatus isConnected={isConnected} onRetry={() => window.location.reload()} />
             {/* Top Bar - Simplified for Card Context */}
             <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-10">
                 {/* Empty or Breadcrumbs */}
@@ -310,56 +340,40 @@ const AgentStreamsPage: React.FC = () => {
                         ) : (
                             <div className="space-y-6 pb-4">
                                 {messages.map((msg) => (
-                                    <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start items-end gap-2'}`}>
+                                    <React.Fragment key={msg.id}>
+                                        {msg.type === 'tool' ? (
+                                            <ToolCallCard
+                                                toolName={msg.toolCall?.name || 'Unknown Tool'}
+                                                parameters={msg.toolCall?.parameters}
+                                                result={msg.toolCall?.response}
+                                                executionTime={msg.toolCall?.executionTime}
+                                                isExecuting={msg.toolCall?.isExecuting}
+                                            />
+                                        ) : (
+                                            <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start items-end gap-2'}`}>
+                                                {msg.type !== 'user' && (
+                                                    <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 mb-1">
+                                                        <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                                    </div>
+                                                )}
 
-                                        {msg.type !== 'user' && (
-                                            <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 mb-1">
-                                                <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                                <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.type === 'user'
+                                                    ? 'bg-purple-600 text-white rounded-tr-sm'
+                                                    : 'bg-white border border-gray-100 text-gray-800 rounded-tl-sm'
+                                                    }`}>
+                                                    <div className="markdown-body whitespace-pre-wrap">
+                                                        {msg.content}
+                                                        {msg.isStreaming && (
+                                                            <span className="inline-block w-1 h-4 ml-1 bg-purple-600 animate-pulse"></span>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
                                         )}
-
-                                        <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.type === 'user'
-                                            ? 'bg-purple-600 text-white rounded-tr-sm'
-                                            : 'bg-white border border-gray-100 text-gray-800 rounded-tl-sm'
-                                            }`}>
-                                            {msg.type === 'tool' ? (
-                                                <div className="text-xs">
-                                                    <div className="font-semibold opacity-75 mb-2 flex items-center gap-1.5 border-b border-gray-200 pb-1">
-                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                                                        Used Tool: <span className="font-mono text-purple-600">{msg.toolCall?.name}</span>
-                                                    </div>
-                                                    {expandedToolIds.has(msg.id) ? (
-                                                        <div className="animate-fade-in bg-gray-50 rounded p-2 mt-2">
-                                                            <pre className="text-gray-600 overflow-x-auto whitespace-pre-wrap font-mono text-[10px]">
-                                                                {JSON.stringify(msg.toolCall?.response, null, 2)}
-                                                            </pre>
-                                                            <button onClick={() => toggleToolExpansion(msg.id)} className="text-xs text-gray-400 hover:text-gray-600 mt-2 flex items-center gap-1">
-                                                                Collapse
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <button onClick={() => toggleToolExpansion(msg.id)} className="text-xs text-purple-500 hover:text-purple-700 font-medium flex items-center gap-1 mt-1 transition-colors">
-                                                            View Details
-                                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ) : (
-                                                <div className="markdown-body">
-                                                    {msg.content}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
+                                    </React.Fragment>
                                 ))}
-                                {isLoading && (
-                                    <div className="flex items-center gap-2 ml-10">
-                                        <div className="bg-white border border-gray-100 px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm flex items-center gap-1.5">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce"></span>
-                                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce animation-delay-200"></span>
-                                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce animation-delay-400"></span>
-                                        </div>
-                                    </div>
+                                {isLoading && messages[messages.length - 1]?.type !== 'agent' && (
+                                    <TypingIndicator agentName={selectedWorkflow === 'ACCESS_WORKFLOW' ? 'Access Agent' : selectedWorkflow === 'RESOURCE_PROVISIONING' ? 'Resource Agent' : 'Intune Agent'} />
                                 )}
                                 <div ref={messagesEndRef} />
                             </div>

@@ -79,13 +79,17 @@ export const AgentService = {
                                 const data = JSON.parse(dataStr);
 
                                 // Map A2A events to our StreamEvent format
-                                if (data.statusUpdate) {
-                                    if (data.statusUpdate.status?.state === 'TASK_STATE_FAILED') {
-                                        const errorText = data.statusUpdate.status.message?.parts?.[0]?.text ||
-                                            JSON.stringify(data.statusUpdate.status.message);
+                                if (data.statusUpdate || data.status) {
+                                    const statusData = data.statusUpdate || data;
+                                    const status = statusData.status || statusData;
+
+                                    if (status.state === 'TASK_STATE_FAILED') {
+                                        const errorText = status.message?.parts?.[0]?.text ||
+                                            JSON.stringify(status.message);
                                         onEvent({ type: 'error', content: errorText });
                                     } else {
-                                        onEvent({ type: 'status_update', data: data.statusUpdate });
+                                        // Send status update with the message content
+                                        onEvent({ type: 'status_update', data: statusData });
                                     }
                                 } else if (data.messageDelta || data.delta) {
                                     const text = data.messageDelta?.content?.[0]?.text || data.delta?.text || '';
@@ -108,8 +112,13 @@ export const AgentService = {
                     }
 
                     if (line.startsWith('data: ')) {
-                        // Append data content. Note: slice(6) removes "data: "
-                        currentDataBuffer += line.slice(6);
+                        // Append data content with newline to preserve JSON structure
+                        const dataContent = line.slice(6);
+                        if (currentDataBuffer) {
+                            currentDataBuffer += '\n' + dataContent;
+                        } else {
+                            currentDataBuffer = dataContent;
+                        }
                     }
                 }
             }
